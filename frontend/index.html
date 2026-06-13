@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VoxCraft — Professional TTS Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js" type="module"></script>
+<style>
+/* ═══ RESET & BASE ═══ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0c0e12; --bg2:#14171c; --bg3:#1c1f26; --bg4:#252932;
+  --border:#2e3340; --border-hover:#3d4354;
+  --text:#e8eaed; --text-dim:#8b90a0; --text-muted:#5c6170;
+  --accent:#6366f1; --accent-hover:#818cf8; --accent-glow:rgba(99,102,241,0.25);
+  --green:#22c55e; --amber:#f59e0b; --red:#ef4444;
+  --radius:10px; --radius-sm:6px; --radius-lg:16px;
+  --shadow:0 1px 3px rgba(0,0,0,0.3),0 1px 2px rgba(0,0,0,0.4);
+  --shadow-lg:0 4px 24px rgba(0,0,0,0.4);
+  --transition:150ms cubic-bezier(0.4,0,0.2,1);
+}
+html{font-size:15px}
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.6;
+  -webkit-font-smoothing:antialiased;min-height:100vh;
+}
+::selection{background:var(--accent);color:#fff}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--border-hover)}
+
+/* ═══ LAYOUT ═══ */
+.app{max-width:1280px;margin:0 auto;padding:0 2rem 3rem}
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1.25rem 0;border-bottom:1px solid var(--border);margin-bottom:2.5rem;
+}
+.topbar-brand{display:flex;align-items:center;gap:0.75rem}
+.topbar-brand svg{width:32px;height:32px}
+.topbar-brand h1{font-size:1.25rem;font-weight:700;letter-spacing:-0.02em;background:linear-gradient(135deg,#e8eaed,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.topbar-brand span{font-size:0.8rem;color:var(--text-muted);background:var(--bg3);padding:0.15rem 0.5rem;border-radius:var(--radius-sm);-webkit-text-fill-color:var(--text-muted)}
+.topbar-status{display:flex;align-items:center;gap:0.75rem;font-size:0.8rem;color:var(--text-dim)}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--amber);animation:pulse 1.5s infinite}
+.status-dot.online{background:var(--green);animation:none}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+.layout{display:grid;grid-template-columns:1fr 380px;gap:2rem;align-items:start}
+
+/* ═══ MAIN STUDIO ═══ */
+.studio{display:flex;flex-direction:column;gap:1.5rem}
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;transition:border-color var(--transition)}
+.panel:hover{border-color:var(--border-hover)}
+.panel-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid var(--border);font-size:0.8rem;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.04em}
+.panel-body{padding:1.25rem}
+
+/* Text Input */
+.text-editor{position:relative}
+.text-editor textarea{
+  width:100%;min-height:180px;padding:1rem;background:var(--bg3);
+  border:1px solid var(--border);border-radius:var(--radius);
+  color:var(--text);font-family:'Inter',sans-serif;font-size:0.95rem;line-height:1.7;
+  resize:vertical;transition:border-color var(--transition);outline:none;
+}
+.text-editor textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+.text-editor textarea::placeholder{color:var(--text-muted)}
+.text-editor .char-count{
+  position:absolute;bottom:0.75rem;right:0.75rem;
+  font-size:0.75rem;color:var(--text-muted);background:var(--bg3);padding:0.1rem 0.4rem;border-radius:4px;
+}
+.tag-toolbar{
+  display:flex;gap:0.4rem;flex-wrap:wrap;padding:0.75rem 0 0;
+  border-top:1px solid var(--border);margin-top:0.75rem;
+}
+.tag-btn{
+  padding:0.25rem 0.6rem;font-size:0.7rem;font-weight:500;
+  background:var(--bg4);border:1px solid var(--border);border-radius:var(--radius-sm);
+  color:var(--text-dim);cursor:pointer;transition:all var(--transition);font-family:'Inter',sans-serif;
+}
+.tag-btn:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+.tag-btn.used{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* Controls */
+.controls-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.control-group{display:flex;flex-direction:column;gap:0.35rem}
+.control-group label{font-size:0.75rem;font-weight:600;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.03em}
+.control-group select,.control-group input[type="number"]{
+  padding:0.55rem 0.75rem;background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--radius-sm);color:var(--text);font-size:0.85rem;
+  font-family:'Inter',sans-serif;outline:none;transition:border-color var(--transition);cursor:pointer;
+}
+.control-group select:focus,.control-group input[type="number"]:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+.control-group input[type="range"]{
+  -webkit-appearance:none;appearance:none;width:100%;height:4px;
+  background:var(--bg4);border-radius:2px;outline:none;cursor:pointer;
+}
+.control-group input[type="range"]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+  background:var(--accent);cursor:pointer;border:2px solid var(--bg2);
+  box-shadow:0 0 0 2px var(--accent);
+}
+.range-labels{display:flex;justify-content:space-between;font-size:0.7rem;color:var(--text-muted)}
+.range-value{text-align:right;font-size:0.8rem;font-weight:600;color:var(--accent)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+
+/* Voice Cards */
+.voice-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:0.5rem}
+.voice-card{
+  padding:0.6rem 0.5rem;background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--radius);cursor:pointer;text-align:center;
+  transition:all var(--transition);position:relative;
+}
+.voice-card:hover{border-color:var(--border-hover);transform:translateY(-1px)}
+.voice-card.selected{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 0 16px var(--accent-glow)}
+.voice-card .gender-badge{
+  display:inline-block;font-size:0.6rem;font-weight:700;padding:0.05rem 0.35rem;
+  border-radius:3px;margin-bottom:0.25rem;
+}
+.voice-card .gender-badge.male{background:rgba(99,102,241,0.15);color:var(--accent)}
+.voice-card .gender-badge.female{background:rgba(236,72,153,0.15);color:#ec4899}
+.voice-card .voice-name{font-size:0.8rem;font-weight:600;color:var(--text)}
+.voice-card .voice-desc{font-size:0.65rem;color:var(--text-muted);margin-top:0.15rem;line-height:1.3}
+
+/* Generate Button */
+.generate-btn{
+  width:100%;padding:0.85rem;background:var(--accent);border:none;border-radius:var(--radius);
+  color:#fff;font-size:1rem;font-weight:600;cursor:pointer;
+  transition:all var(--transition);font-family:'Inter',sans-serif;
+  display:flex;align-items:center;justify-content:center;gap:0.5rem;
+  position:relative;overflow:hidden;
+}
+.generate-btn:hover{background:var(--accent-hover);transform:translateY(-1px);box-shadow:0 4px 20px var(--accent-glow)}
+.generate-btn:active{transform:translateY(0)}
+.generate-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;box-shadow:none}
+.generate-btn .spinner{display:none;width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite}
+.generate-btn.loading .spinner{display:block}
+.generate-btn.loading .btn-text{opacity:0.7}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Audio Player */
+.player-section{animation:fadeIn 0.3s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.player-controls{display:flex;align-items:center;gap:1rem;margin-bottom:0.75rem}
+.play-btn{
+  width:40px;height:40px;border-radius:50%;background:var(--accent);border:none;
+  color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all var(--transition);flex-shrink:0;
+}
+.play-btn:hover{background:var(--accent-hover);transform:scale(1.05)}
+.play-btn svg{width:16px;height:16px}
+.player-info{flex:1;min-width:0}
+.player-info .filename{font-size:0.85rem;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.player-info .meta{font-size:0.75rem;color:var(--text-muted);display:flex;gap:1rem}
+.time-display{font-size:0.75rem;color:var(--text-muted);font-variant-numeric:tabular-nums;min-width:80px;text-align:right}
+.waveform-container{background:var(--bg3);border-radius:var(--radius-sm);padding:0.5rem;height:80px}
+.action-buttons{display:flex;gap:0.5rem;margin-top:0.75rem}
+.action-btn{
+  display:flex;align-items:center;gap:0.4rem;padding:0.45rem 0.85rem;
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);
+  color:var(--text-dim);font-size:0.8rem;font-family:'Inter',sans-serif;cursor:pointer;
+  transition:all var(--transition);
+}
+.action-btn:hover{background:var(--bg4);border-color:var(--border-hover);color:var(--text)}
+.action-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.action-btn.primary:hover{background:var(--accent-hover)}
+.action-btn svg{width:14px;height:14px}
+
+/* ═══ SIDEBAR — History ═══ */
+.sidebar{display:flex;flex-direction:column;gap:1rem;position:sticky;top:1rem}
+.history-filter{display:flex;gap:0.5rem}
+.history-filter input{
+  flex:1;padding:0.55rem 0.75rem;background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--radius-sm);color:var(--text);font-size:0.8rem;
+  font-family:'Inter',sans-serif;outline:none;transition:border-color var(--transition);
+}
+.history-filter input:focus{border-color:var(--accent)}
+.history-filter input::placeholder{color:var(--text-muted)}
+.history-list{display:flex;flex-direction:column;gap:0.5rem;max-height:calc(100vh - 240px);overflow-y:auto}
+.history-item{
+  display:flex;align-items:center;gap:0.75rem;padding:0.75rem;
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);
+  cursor:pointer;transition:all var(--transition);
+}
+.history-item:hover{border-color:var(--border-hover);transform:translateX(2px)}
+.history-item .h-icon{width:32px;height:32px;border-radius:var(--radius-sm);background:var(--bg4);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--accent);font-size:0.9rem}
+.history-item .h-info{flex:1;min-width:0}
+.history-item .h-text{font-size:0.8rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.history-item .h-meta{font-size:0.7rem;color:var(--text-muted);display:flex;gap:0.5rem}
+.history-item .h-voice{font-size:0.65rem;color:var(--text-muted);background:var(--bg4);padding:0.05rem 0.35rem;border-radius:3px}
+.history-item .h-play{width:28px;height:28px;border-radius:50%;background:var(--bg4);border:1px solid var(--border);color:var(--text-dim);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all var(--transition);flex-shrink:0}
+.history-item .h-play:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+.empty-state{text-align:center;padding:2rem 1rem;color:var(--text-muted)}
+.empty-state svg{width:40px;height:40px;margin-bottom:0.75rem;opacity:0.3}
+.empty-state p{font-size:0.85rem}
+
+/* ═══ TOAST ═══ */
+.toast-container{position:fixed;bottom:1.5rem;right:1.5rem;z-index:999;display:flex;flex-direction:column;gap:0.5rem}
+.toast{
+  padding:0.75rem 1rem;background:var(--bg3);border:1px solid var(--border);
+  border-radius:var(--radius);font-size:0.85rem;color:var(--text);
+  box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:0.5rem;
+  animation:slideUp 0.3s ease;
+}
+.toast.success{border-color:var(--green)}
+.toast.error{border-color:var(--red)}
+.toast .toast-icon{font-size:1rem}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+/* ═══ RESPONSIVE ═══ */
+@media(max-width:960px){.layout{grid-template-columns:1fr}.voice-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:600px){
+  .app{padding:0 1rem}
+  .controls-grid{grid-template-columns:1fr}
+  .voice-grid{grid-template-columns:repeat(2,1fr)}
+  .two-col{grid-template-columns:1fr}
+}
+
+/* ═══ BATCH MODE ═══ */
+.batch-mode .text-editor textarea{min-height:280px}
+.batch-toggle{
+  display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--text-dim);cursor:pointer;
+}
+.batch-toggle input[type="checkbox"]{-webkit-appearance:none;appearance:none;width:36px;height:20px;background:var(--bg4);border-radius:10px;position:relative;cursor:pointer;transition:var(--transition);flex-shrink:0;border:1px solid var(--border)}
+.batch-toggle input[type="checkbox"]::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--text-dim);transition:var(--transition)}
+.batch-toggle input[type="checkbox"]:checked{background:var(--accent);border-color:var(--accent)}
+.batch-toggle input[type="checkbox"]:checked::after{left:18px;background:#fff}
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <!-- Top Bar -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="url(#g)"/><path d="M10 12v8a2 2 0 004 0v-2m4-6v8a2 2 0 004 0v-2" stroke="#fff" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="10" r="2" fill="#fff"/><defs><linearGradient id="g" x1="0" y1="0" x2="32" y2="32"><stop offset="0%" stop-color="#6366f1"/><stop offset="100%" stop-color="#a78bfa"/></linearGradient></defs></svg>
+      <h1>VoxCraft</h1>
+      <span>Studio</span>
+    </div>
+    <div class="topbar-status">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="statusText">Connecting...</span>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- Main Studio -->
+    <div class="studio">
+      <!-- Text Input -->
+      <div class="panel">
+        <div class="panel-header">
+          <span>Script</span>
+          <label class="batch-toggle">
+            <input type="checkbox" id="batchMode">
+            Batch Mode
+          </label>
+        </div>
+        <div class="panel-body">
+          <div class="text-editor">
+            <textarea id="textInput" placeholder="Type or paste your script here...&#10;&#10;Pro tip: Use expression tags like &lt;laugh&gt; or &lt;breath&gt; for natural speech." maxlength="5000"></textarea>
+            <span class="char-count" id="charCount">0 / 5,000</span>
+          </div>
+          <div class="tag-toolbar">
+            <button class="tag-btn" data-tag="<laugh>">😂 laugh</button>
+            <button class="tag-btn" data-tag="<breath>">🫁 breath</button>
+            <button class="tag-btn" data-tag="<sigh>">😮‍💨 sigh</button>
+            <button class="tag-btn" data-tag="<whisper>">🤫 whisper</button>
+            <button class="tag-btn" data-tag="<say>">🎙️ say</button>
+            <button class="tag-btn" data-tag="<cough>">🤧 cough</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Voice Selection -->
+      <div class="panel">
+        <div class="panel-header"><span>Voice Style</span><span style="font-weight:400;text-transform:none;color:var(--text-muted)" id="selectedVoiceName">M1 — Warm Baritone</span></div>
+        <div class="panel-body">
+          <div class="voice-grid" id="voiceGrid"></div>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="panel">
+        <div class="panel-header"><span>Parameters</span></div>
+        <div class="panel-body">
+          <div class="controls-grid">
+            <div class="control-group">
+              <label>Language</label>
+              <select id="languageSelect"></select>
+            </div>
+            <div class="control-group">
+              <label>Speed</label>
+              <div class="range-labels"><span>Slow</span><span class="range-value" id="speedValue">1.05×</span></div>
+              <input type="range" id="speedSlider" min="0.7" max="2.0" step="0.05" value="1.05">
+            </div>
+            <div class="control-group">
+              <label>Quality</label>
+              <div class="range-labels"><span>Draft</span><span class="range-value" id="qualityValue">8</span></div>
+              <input type="range" id="qualitySlider" min="5" max="12" step="1" value="8">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Generate -->
+      <button class="generate-btn" id="generateBtn">
+        <span class="spinner"></span>
+        <span class="btn-text">Generate Speech</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+
+      <!-- Player -->
+      <div class="panel player-section" id="playerSection" style="display:none">
+        <div class="panel-body">
+          <div class="player-controls">
+            <button class="play-btn" id="playBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            </button>
+            <div class="player-info">
+              <div class="filename" id="playerFilename">output.wav</div>
+              <div class="meta">
+                <span id="playerDuration">0:00</span>
+                <span id="playerVoice">M1</span>
+                <span id="playerQuality">44.1 kHz</span>
+              </div>
+            </div>
+            <div class="time-display"><span id="currentTime">0:00</span> / <span id="totalTime">0:00</span></div>
+          </div>
+          <div class="waveform-container" id="waveform"></div>
+          <div class="action-buttons">
+            <button class="action-btn primary" id="downloadBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+              Download WAV
+            </button>
+            <button class="action-btn" id="copyBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              Copy Text
+            </button>
+            <button class="action-btn" id="regenerateBtn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/></svg>
+              Regenerate
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar — History -->
+    <div class="sidebar">
+      <div class="panel">
+        <div class="panel-header"><span>History</span><span style="font-weight:400;text-transform:none;font-size:0.75rem;color:var(--text-muted)" id="historyCount">0 items</span></div>
+        <div class="panel-body" style="padding:0.75rem">
+          <div class="history-filter">
+            <input type="text" id="historySearch" placeholder="Search generations..." />
+          </div>
+          <div class="history-list" id="historyList">
+            <div class="empty-state">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <p>No generations yet.<br>Your history will appear here.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script type="module">
+/* ═══ VoxCraft Frontend — Studio Application ═══ */
+
+import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js'
+
+const API = window.location.origin
+
+// ─── State ───
+const state = {
+  voices: [],
+  languages: {},
+  tags: {},
+  selectedVoice: 'M1',
+  currentAudioUrl: null,
+  currentId: null,
+  history: [],
+  isPlaying: false,
+  ws: null,
+}
+
+let wavesurfer = null
+
+// ─── DOM Refs ───
+const $ = s => document.querySelector(s)
+const $$ = s => document.querySelectorAll(s)
+
+// ─── Init ───
+async function init() {
+  await Promise.all([fetchVoices(), fetchLanguages(), fetchTags(), checkHealth()])
+  renderVoices()
+  renderLanguages()
+  setupEventListeners()
+  await loadHistory()
+}
+
+async function checkHealth() {
+  try {
+    const res = await fetch(`${API}/api/health`)
+    const data = await res.json()
+    $('#statusDot').classList.add('online')
+    $('#statusText').textContent = `Online · ${data.voices_available} voices · ${data.languages_available} languages`
+  } catch {
+    $('#statusText').textContent = 'Offline — Start the backend server'
+  }
+}
+
+async function fetchVoices() {
+  const res = await fetch(`${API}/api/voices`)
+  state.voices = await res.json()
+}
+
+async function fetchLanguages() {
+  const res = await fetch(`${API}/api/languages`)
+  state.languages = await res.json()
+}
+
+async function fetchTags() {
+  const res = await fetch(`${API}/api/tags`)
+  state.tags = await res.json()
+}
+
+// ─── Render ───
+function renderVoices() {
+  const grid = $('#voiceGrid')
+  grid.innerHTML = state.voices.map(v => `
+    <div class="voice-card ${v.name === state.selectedVoice ? 'selected' : ''}" data-voice="${v.name}">
+      <div class="gender-badge ${v.gender}">${v.gender === 'male' ? '♂' : '♀'}</div>
+      <div class="voice-name">${v.name}</div>
+      <div class="voice-desc">${v.display_name.split('—')[1]?.trim() || ''}</div>
+    </div>
+  `).join('')
+
+  grid.querySelectorAll('.voice-card').forEach(card => {
+    card.addEventListener('click', () => {
+      state.selectedVoice = card.dataset.voice
+      grid.querySelectorAll('.voice-card').forEach(c => c.classList.remove('selected'))
+      card.classList.add('selected')
+      const voice = state.voices.find(v => v.name === state.selectedVoice)
+      $('#selectedVoiceName').textContent = voice ? voice.display_name : state.selectedVoice
+    })
+  })
+}
+
+function renderLanguages() {
+  const sel = $('#languageSelect')
+  sel.innerHTML = Object.entries(state.languages)
+    .map(([code, name]) => `<option value="${code}" ${code === 'en' ? 'selected' : ''}>${name}</option>`)
+    .join('')
+}
+
+// ─── Synthesis ───
+async function generate() {
+  const text = $('#textInput').value.trim()
+  if (!text) {
+    showToast('Please enter some text to synthesize.', 'error')
+    return
+  }
+
+  const btn = $('#generateBtn')
+  btn.classList.add('loading')
+  btn.disabled = true
+  btn.querySelector('.btn-text').textContent = 'Generating...'
+
+  try {
+    const body = {
+      text,
+      voice: state.selectedVoice,
+      language: $('#languageSelect').value,
+      speed: parseFloat($('#speedSlider').value),
+      quality: parseInt($('#qualitySlider').value),
+    }
+
+    const res = await fetch(`${API}/api/synthesize`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+
+    if (!res.ok) {
+      const err = await res.json()
+      throw new Error(err.detail || 'Generation failed')
+    }
+
+    const data = await res.json()
+    state.currentAudioUrl = `${API}${data.audio_url}`
+    state.currentId = data.id
+
+    // Load into player
+    await loadAudio(state.currentAudioUrl, data)
+    $('#playerSection').style.display = 'block'
+    $('#playerSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+
+    showToast(`Generated ${data.duration_seconds.toFixed(1)}s of audio`, 'success')
+    await loadHistory()
+
+  } catch (err) {
+    showToast(err.message, 'error')
+  } finally {
+    btn.classList.remove('loading')
+    btn.disabled = false
+    btn.querySelector('.btn-text').textContent = 'Generate Speech'
+  }
+}
+
+// ─── Audio Player ───
+async function loadAudio(url, meta) {
+  if (wavesurfer) {
+    wavesurfer.destroy()
+  }
+
+  $('#waveform').innerHTML = ''
+
+  wavesurfer = WaveSurfer.create({
+    container: '#waveform',
+    waveColor: 'rgba(99,102,241,0.3)',
+    progressColor: '#6366f1',
+    cursorColor: '#818cf8',
+    barWidth: 2,
+    barGap: 1,
+    barRadius: 2,
+    height: 60,
+    normalize: true,
+    backend: 'WebAudio',
+    minPxPerSec: 30,
+  })
+
+  wavesurfer.load(url)
+
+  wavesurfer.on('ready', () => {
+    const dur = wavesurfer.getDuration()
+    $('#playerDuration').textContent = meta?.duration_seconds ? formatTime(meta.duration_seconds) : formatTime(dur)
+    $('#totalTime').textContent = formatTime(dur)
+    $('#playerFilename').textContent = `voxcraft_${meta?.id || 'output'}.wav`
+    $('#playerVoice').textContent = meta?.voice || state.selectedVoice
+  })
+
+  wavesurfer.on('audioprocess', () => {
+    $('#currentTime').textContent = formatTime(wavesurfer.getCurrentTime())
+  })
+
+  wavesurfer.on('play', () => {
+    state.isPlaying = true
+    $('#playBtn').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>`
+  })
+
+  wavesurfer.on('finish', () => {
+    state.isPlaying = false
+    $('#playBtn').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>`
+  })
+}
+
+// ─── History ───
+async function loadHistory() {
+  try {
+    const res = await fetch(`${API}/api/history`)
+    state.history = await res.json()
+    renderHistory()
+  } catch {}
+}
+
+function renderHistory() {
+  const list = $('#historyList')
+  const count = $('#historyCount')
+
+  if (state.history.length === 0) {
+    list.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      <p>No generations yet.<br>Your history will appear here.</p>
+    </div>`
+    count.textContent = '0 items'
+    return
+  }
+
+  count.textContent = `${state.history.length} items`
+
+  const search = $('#historySearch').value.toLowerCase()
+  const filtered = state.history.filter(h =>
+    h.text?.toLowerCase().includes(search) || h.voice?.toLowerCase().includes(search)
+  )
+
+  list.innerHTML = filtered.map(h => `
+    <div class="history-item" data-url="/api/audio/${h.filename}.wav" data-id="${h.id}">
+      <div class="h-icon">${h.voice?.startsWith('M') ? '♂' : '♀'}</div>
+      <div class="h-info">
+        <div class="h-text">${h.text?.substring(0, 60)}${(h.text?.length || 0) > 60 ? '...' : ''}</div>
+        <div class="h-meta">
+          <span>${h.voice}</span>
+          <span>${h.duration_seconds?.toFixed(1) || '?'}s</span>
+          <span>${h.language?.toUpperCase()}</span>
+        </div>
+      </div>
+      <button class="h-play" data-url="/api/audio/${h.filename}.wav" title="Play">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      </button>
+    </div>
+  `).join('')
+
+  // Click to load
+  list.querySelectorAll('.history-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+      if (e.target.closest('.h-play')) return
+      const url = `${API}${item.dataset.url}`
+      const id = item.dataset.id
+      state.currentAudioUrl = url
+      state.currentId = id
+      loadAudio(url, { id })
+      $('#playerSection').style.display = 'block'
+    })
+    item.querySelector('.h-play')?.addEventListener('click', (e) => {
+      e.stopPropagation()
+      const url = `${API}${item.dataset.url}`
+      loadAudio(url, { id: item.dataset.id })
+      $('#playerSection').style.display = 'block'
+    })
+  })
+}
+
+// ─── Helpers ───
+function formatTime(seconds) {
+  const m = Math.floor(seconds / 60)
+  const s = Math.floor(seconds % 60)
+  return `${m}:${s.toString().padStart(2, '0')}`
+}
+
+function showToast(msg, type = 'info') {
+  const container = $('#toastContainer')
+  const toast = document.createElement('div')
+  toast.className = `toast ${type}`
+  const icons = { success: '✅', error: '❌', info: 'ℹ️' }
+  toast.innerHTML = `<span class="toast-icon">${icons[type] || 'ℹ️'}</span> ${msg}`
+  container.appendChild(toast)
+  setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300) }, 3000)
+}
+
+// ─── Event Listeners ───
+function setupEventListeners() {
+  // Generate
+  $('#generateBtn').addEventListener('click', generate)
+
+  // Ctrl+Enter shortcut
+  $('#textInput').addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault()
+      generate()
+    }
+  })
+
+  // Char count
+  $('#textInput').addEventListener('input', () => {
+    const len = $('#textInput').value.length
+    $('#charCount').textContent = `${len.toLocaleString()} / 5,000`
+  })
+
+  // Play/Pause
+  $('#playBtn').addEventListener('click', () => {
+    if (!wavesurfer) return
+    if (state.isPlaying) {
+      wavesurfer.pause()
+    } else {
+      wavesurfer.play()
+    }
+  })
+
+  // Sliders
+  $('#speedSlider').addEventListener('input', () => {
+    $('#speedValue').textContent = `${parseFloat($('#speedSlider').value).toFixed(2)}×`
+  })
+  $('#qualitySlider').addEventListener('input', () => {
+    $('#qualityValue').textContent = $('#qualitySlider').value
+  })
+
+  // Download
+  $('#downloadBtn').addEventListener('click', () => {
+    if (!state.currentAudioUrl) return
+    const a = document.createElement('a')
+    a.href = state.currentAudioUrl
+    a.download = `voxcraft_${state.currentId || 'output'}.wav`
+    a.click()
+    showToast('Download started', 'success')
+  })
+
+  // Copy text
+  $('#copyBtn').addEventListener('click', () => {
+    const text = $('#textInput').value
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('Text copied to clipboard', 'success')
+    })
+  })
+
+  // Regenerate
+  $('#regenerateBtn').addEventListener('click', generate)
+
+  // History search
+  $('#historySearch').addEventListener('input', renderHistory)
+
+  // Tag buttons
+  $$('.tag-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const textarea = $('#textInput')
+      const tag = btn.dataset.tag
+      const start = textarea.selectionStart
+      const end = textarea.selectionEnd
+      const selectedText = textarea.value.substring(start, end)
+      const insertion = selectedText ? `${tag}${selectedText}${tag.replace('<', '</')}` : tag
+      textarea.setRangeText(insertion, start, end, 'end')
+      textarea.focus()
+      textarea.dispatchEvent(new Event('input'))
+    })
+  })
+
+  // Keyboard shortcuts help
+  document.addEventListener('keydown', (e) => {
+    if (e.key === ' ' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+      e.preventDefault()
+      $('#playBtn').click()
+    }
+  })
+}
+
+// ─── Start ───
+init()
+</script>
+</body>
+</html>

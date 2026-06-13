@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Generated TTS output (audio files and metadata)
+data/exports/*
+data/history/*
+data/voices/*
+
+# Keep directory structure
+!data/exports/.gitkeep
+!data/history/.gitkeep
+!data/voices/.gitkeep
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Supertonic model cache
+~/.cache/supertonic3/
