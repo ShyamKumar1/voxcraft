@@ -20,12 +20,17 @@ and content creation — all running 100% locally on your machine.
 ## Quick Start
 
 ```bash
+# Clone the repo
+git clone https://github.com/ShyamKumar1/voxcraft.git
+cd voxcraft
+
 # Install dependencies
 cd backend
 pip install -r requirements.txt
+cd ..
 
 # Start the server
-python -m app
+python -m backend.app
 
 # Open the studio
 open http://localhost:8765
