@@ -4,29 +4,49 @@ Copy-paste ready. Replace `[your text]` placeholders.
 
 ---
 
-## 1. Reddit — r/selfhosted
+## 1. Reddit — r/selfhosted (New Project Megathread)
 
-**Title:** VoxCraft — a 100% local, free TTS studio with 10 voices, 31 languages (no API, no cloud, no GPU)
+**Title:** N/A — post as a top-level comment in the current New Project Megathread
 
 **Body:**
 
-I built a desktop TTS studio that runs entirely on your machine — no API keys, no cloud, no GPU needed. It wraps Supertonic 3 (99M-parameter ONNX model) in a FastAPI backend + vanilla JS frontend.
+**Project Name:** VoxCraft
 
-What it does:
-- 10 voice styles (5 male, 5 female) each with distinct character
-- 31 languages — English, Hindi, Japanese, Arabic, French, German, and more
-- Expression tags like <laugh>, <breath>, <sigh>, <whisper> for natural speech
-- Speed 0.7x–2.0x and quality 5–12 steps
-- 44.1kHz WAV output, WaveSurfer.js waveform preview
-- Batch mode, generation history, keyboard shortcuts
-- Zero telemetry, zero phoning home
+**Repo/Website Link:** https://github.com/ShyamKumar1/voxcraft
 
-Stack: Python + FastAPI + ONNX Runtime. Frontend is a single HTML file.
+**Description:** VoxCraft is a professional text-to-speech studio that runs 100% locally on your machine. It wraps Supertonic 3 (a 99M-parameter open-weight ONNX model from Supertone Inc.) in a FastAPI backend + vanilla JS frontend. No API keys, no cloud calls, no GPU required — everything runs on CPU.
 
-GitHub: https://github.com/ShyamKumar1/voxcraft
-Install: `pip install -r requirements.txt && python -m backend.app`
+Features:
+- 10 voice styles (5 male, 5 female) each with distinct character — warm baritone, calm tenor, authoritative, friendly, deep narrator, and female equivalents
+- 31 languages — English, Hindi, Japanese, Arabic, French, German, Korean, and 24 more
+- Inline expression tags like `<laugh>`, `<breath>`, `<sigh>`, `<whisper>` for natural speech
+- Speed control 0.7x–2.0x without pitch distortion
+- Quality control 5–12 denoising steps (draft to studio-grade)
+- WaveSurfer.js interactive waveform preview with play/pause
+- Batch mode for processing multiple texts at once
+- Generation history with search and replay
+- 44.1kHz 16-bit WAV output, ready for production
+- Keyboard shortcuts (Cmd+Enter to generate, Space to play/pause)
 
-It's MIT licensed. Looking for contributors — have 6 "good first issue" tickets ready. Would love feedback from the self-hosted crowd.
+The problem it solves: existing TTS tools are either expensive cloud APIs (ElevenLabs, OpenAI TTS) where your text leaves your machine, or complex CLI tools with steep learning curves. VoxCraft gives you a polished desktop studio experience — type text, pick a voice, generate audio — all local, all free.
+
+**Deployment:** 
+```bash
+git clone https://github.com/ShyamKumar1/voxcraft.git
+cd voxcraft/backend
+pip install -r requirements.txt
+cd ..
+python -m backend.app
+# Open http://localhost:8765
+```
+
+First run downloads the ~400MB Supertonic 3 ONNX model from Hugging Face. After that, works fully offline. Requires Python 3.9+ and ONNX Runtime (auto-installed). Runs on macOS, Windows, Linux. M1 MacBook Air handles it without breaking a sweat. No Docker image yet (it's an open issue tagged `good first issue`).
+
+Full docs: https://github.com/ShyamKumar1/voxcraft/wiki
+
+**AI Involvement:** The TTS engine (Supertonic 3) is an AI model — 99M parameter neural TTS running via ONNX Runtime. The VoxCraft studio itself (FastAPI backend, vanilla JS frontend) is traditional code. The AI model runs locally — no data leaves your machine, no telemetry, no analytics.
+
+Looking for contributors — 8 scoped issues tagged `good first issue` up for grabs.
 
 ---
 
