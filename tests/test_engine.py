@@ -1,7 +1,5 @@
 """Tests for the TTS engine module (unit tests, no Supertonic required)."""
 
-import pytest
-
 
 class TestVoiceStyle:
     def test_voice_style_creation(self):

@@ -270,7 +270,7 @@ if __name__ == "__main__":
     print("║  Professional Text-to-Speech Studio      ║")
     print("╚══════════════════════════════════════════╝")
     print("")
-    print(f"  Engine: Supertonic 3 (99M params, ONNX)")
+    print(  "  Engine: Supertonic 3 (99M params, ONNX)")
     print(f"  Voices: {len(PRESET_VOICES)} styles available")
     print(f"  Languages: {len(LANGUAGES)} supported")
     print(f"  Server: http://{config.HOST}:{config.PORT}")
