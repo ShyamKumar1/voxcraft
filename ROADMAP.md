@@ -1,54 +1,148 @@
-# Roadmap
+# VoxCraft Roadmap
 
-VoxCraft is a professional TTS studio built on Supertonic 3. This roadmap outlines where we're headed and where you can contribute.
+VoxCraft is a professional TTS studio powered by Supertonic 3 — 100% local, 10 voices, 31 languages, free forever.
 
-## Vision
+This roadmap is a living document. Priorities shift based on community interest and contributions.
 
-Make studio-quality text-to-speech accessible to everyone — zero cost, zero cloud, zero friction. VoxCraft should be the default tool anyone reaches for when they need a voiceover.
+---
 
-## v1.1 — Polish & Polish (target: community-driven)
+## v1.0 (Current)
 
-- [ ] **MP3 & OGG export** — WAV is great; compressed formats are practical for web and social media
-- [ ] **Dark/light theme toggle** — The dark theme is gorgeous, but some people prefer light
-- [ ] **Audio trimming in the waveform** — Select a region in the waveform and export just that segment
-- [ ] **Keyboard shortcut reference** — A `?` shortcut that shows all available shortcuts in a modal
-- [ ] **Undo/redo for text editor** — Ctrl+Z/Y for the script textarea
-- [ ] **Drag & drop text files** — Drop a `.txt` file onto the textarea to load it
+- [x] FastAPI backend with 7 endpoints
+- [x] 10 voice styles (M1–M5, F1–F5)
+- [x] 31 language support
+- [x] 6 expression tags (laugh, breath, sigh, whisper, cough, say)
+- [x] Speed control (0.7×–2.0×)
+- [x] Quality control (5–12 denoising steps)
+- [x] WaveSurfer.js waveform preview
+- [x] Batch mode
+- [x] Generation history with search
+- [x] 44.1kHz 16-bit WAV export
+- [x] Keyboard shortcuts
+- [x] MIT license
 
-## v1.2 — Power User Features
+---
 
-- [ ] **SSML support** — Richer markup beyond expression tags: `<break>`, `<emphasis>`, `<prosody>`
-- [ ] **Voice preview samples** — Click a voice card to hear a 3-second sample before generating
-- [ ] **Presets system** — Save and load named presets (voice + speed + quality + language combos)
-- [ ] **Queue system** — Add multiple texts to a queue, process them in sequence, with progress bar
-- [ ] **Export directly to video editor formats** — Timestamped SRT/CSV for subtitle sync
-- [ ] **API key auth (optional)** — For server deployments; disabled by default for local use
+## v1.1 — Polish & Ecosystem
 
-## v1.3 — Ecosystem
+**Target:** Make VoxCraft feel like a polished product, not a prototype.
 
-- [ ] **Custom voice import UI** — Load Supertonic Voice Builder JSON files directly from the UI
-- [ ] **Obsidian plugin** — Generate voiceovers directly from Obsidian notes
-- [ ] **Raycast extension** — Select text anywhere on macOS, generate audio via keyboard shortcut
-- [ ] **CLI tool** — `voxcraft generate "text" --voice M1 --output out.wav` for scripting
-- [ ] **Docker image** — One-command deployment: `docker run -p 8765:8765 shyamkumar1/voxcraft`
-- [ ] **GitHub Pages demo** — A live demo with pre-generated samples for people to hear before installing
+### MP3 & Additional Export Formats
+Add MP3 (via pydub/ffmpeg), OGG, and FLAC export options alongside WAV. Different platforms have different format requirements — Instagram wants MP4, podcasts want MP3, audiobooks need chapter markers.
 
-## v2.0 — Beyond the Desktop
+**Complexity:** Easy · **Tags:** `good first issue`, `backend`, `frontend`
 
-- [ ] **Web version** — Run the engine in-browser via ONNX Runtime Web (WebGPU)
-- [ ] **Mobile PWA** — Install as a standalone app on iOS/Android
-- [ ] **Multi-language project mode** — One project, multiple languages, unified export
-- [ ] **Collaboration** — Share voice presets and scripts via GitHub Gists
+### Dark/Light Theme Toggle
+Add a theme switcher with a polished light mode. The current dark theme is beautiful but some users prefer light mode for daytime editing.
+
+**Complexity:** Easy · **Tags:** `good first issue`, `frontend`
+
+### Voice Preview Buttons
+Add a small play button on each voice card in the selector that plays a 3-second preview of that voice speaking a standard phrase. Currently you have to generate full audio just to audition a voice.
+
+**Complexity:** Medium · **Tags:** `frontend`, `backend`, `voice`
+
+### Undo/Redo in Text Editor
+Simple undo/redo support for the script textarea. Currently Ctrl+Z works natively, but a dedicated button + extended history would improve the editing experience.
+
+**Complexity:** Easy · **Tags:** `good first issue`, `frontend`
+
+### Download History as ZIP
+Allow downloading all history items or selected items as a ZIP archive from the server.
+
+**Complexity:** Medium · **Tags:** `backend`, `frontend`
+
+### Text Statistics
+Show word count, estimated duration, and reading time alongside the character count in the editor.
+
+**Complexity:** Easy · **Tags:** `good first issue`, `frontend`
+
+---
+
+## v1.2 — Power Features
+
+**Target:** Features that professional content creators actually need.
+
+### SSML Support
+Full or partial SSML (Speech Synthesis Markup Language) support beyond the current expression tags. Includes `<prosody>`, `<break>`, `<emphasis>`, and `<phoneme>`.
+
+**Complexity:** Hard · **Tags:** `tts-engine`, `backend`
+
+### Custom Voice Import UI
+A UI flow for importing custom voice JSON files from Supertonic Voice Builder. Currently requires manual code changes.
+
+**Complexity:** Medium · **Tags:** `frontend`, `backend`, `voice`
+
+### Audio Trimming & Normalization
+Basic post-processing: trim silence from start/end, normalize volume, fade in/out.
+
+**Complexity:** Medium · **Tags:** `backend`, `performance`
+
+### Chapter Marks for Audiobooks
+Add chapter markers to exports. Generate a single WAV with embedded chapter metadata for audiobook platforms.
+
+**Complexity:** Medium · **Tags:** `backend`, `tts-engine`
+
+### Real-time Streaming Preview
+Stream audio as it's being generated instead of waiting for the full file. Reduces perceived latency for long texts.
+
+**Complexity:** Hard · **Tags:** `tts-engine`, `backend`, `frontend`
+
+---
+
+## v2.0 — Collaborative & Multi-Platform
+
+**Target:** VoxCraft as a platform, not just a tool.
+
+### Multi-Voice Script Editor
+Assign different voices to different paragraphs or sentences within a single script. Generate a multi-voice dialogue scene in one go.
+
+**Complexity:** Hard · **Tags:** `frontend`, `backend`, `voice`
+
+### Project Files
+Save/load complete studio sessions as `.voxcraft` project files — text, voice selections, parameters, and generated audio references all in one file.
+
+**Complexity:** Medium · **Tags:** `frontend`, `backend`
+
+### Docker Deployment
+Official Docker image for one-command deployment on any server. Includes the Supertonic model pre-cached for faster startup.
+
+**Complexity:** Medium · **Tags:** `backend`, `dependencies`
+
+### REST API Authentication
+Optional API key authentication for server deployments. Currently the API is wide open (designed for localhost).
+
+**Complexity:** Medium · **Tags:** `backend`
+
+### Plugin System
+A hooks-based plugin system for the backend — custom preprocessors, postprocessors, and exporters. Community voices, effects, and integrations.
+
+**Complexity:** Hard · **Tags:** `backend`
+
+---
+
+## Community Wishlist
+
+These are ideas from the community that haven't been prioritized yet:
+
+- **Pronunciation dictionary** — Custom word pronunciations per language
+- **Emotion presets** — One-click emotional tone (happy, sad, urgent, calm)
+- **Auto-punctuation** — Smart punctuation insertion for raw text
+- **YouTube caption import** — Paste a YouTube URL and auto-extract transcript for voiceover
+- **Mobile PWA** — Progressive Web App for mobile use
+- **Voice morphing** — Blend between two voice styles
+- **Background music mixing** — Add royalty-free background tracks
+- **Subtitle export** — Generate SRT/VTT alongside audio
+- **Accessibility checker** — WCAG compliance for the frontend
+
+---
 
 ## How to Contribute
 
-Every item marked with `[ ]` is an opportunity. Pick one, comment on the issue (or open one if it doesn't exist yet), and start building.
+Pick an issue tagged `good first issue` from the [issue tracker](https://github.com/ShyamKumar1/voxcraft/issues). Read [CONTRIBUTING.md](https://github.com/ShyamKumar1/voxcraft/blob/main/CONTRIBUTING.md) for the full workflow.
 
-High-impact areas for new contributors:
+Want to suggest a feature? Open a [Feature Request](https://github.com/ShyamKumar1/voxcraft/issues/new?template=feature_request.md) or start a [Discussion](https://github.com/ShyamKumar1/voxcraft/discussions).
 
-1. **Frontend polish** — HTML, CSS, vanilla JS. No framework. No build step. Just open `frontend/index.html` and edit.
-2. **Backend features** — Python + FastAPI. Add an endpoint, write a test, ship it.
-3. **Documentation & tutorials** — Wiki pages, video demos, blog posts.
-4. **Testing** — Edge cases, integration tests, performance benchmarks.
+---
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow.
+*Last updated: June 2026*
