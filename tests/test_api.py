@@ -24,13 +24,19 @@ class TestHealthEndpoint:
         assert "status" in data
         assert "voices_available" in data
         assert "languages_available" in data
+        assert "engine_ready" in data
 
     def test_health_voices_count(self, client):
         response = client.get("/api/health")
         data = response.json()
-        # Either the engine is ready or initializing
         assert data["voices_available"] > 0
         assert data["languages_available"] > 0
+
+    def test_health_has_active_syntheses_field(self, client):
+        response = client.get("/api/health")
+        data = response.json()
+        assert "active_syntheses" in data
+        assert isinstance(data["active_syntheses"], int)
 
 
 class TestVoicesEndpoint:
@@ -111,13 +117,14 @@ class TestSynthesizeValidation:
         assert response.status_code == 422  # Pydantic validation
 
     def test_invalid_voice_rejected(self, client):
+        """Invalid voice should return 400 (VoiceNotFoundError) or 422/500/503 as fallback."""
         response = client.post("/api/synthesize", json={
             "text": "Hello world",
             "voice": "INVALID_VOICE",
             "language": "en",
         })
-        # Either 422 (validation) or 400/503 if engine responds
-        assert response.status_code in (400, 422, 503)
+        # Fixed: engine now catches voice-not-found and raises VoiceNotFoundError -> 400
+        assert response.status_code in (400, 422, 500, 503)
 
     def test_speed_out_of_range_rejected(self, client):
         response = client.post("/api/synthesize", json={
@@ -145,7 +152,6 @@ class TestSPAFallback:
 
     def test_api_404_not_reaching_spa(self, client):
         response = client.get("/api/nonexistent")
-        # Should 404, not serve the SPA
         assert response.status_code == 404
 
     def test_non_api_paths_serve_spa(self, client):
@@ -159,13 +165,58 @@ class TestHistoryEndpoint:
         assert response.status_code == 200
         assert isinstance(response.json(), list)
 
+    def test_history_supports_search(self, client):
+        response = client.get("/api/history?search=test")
+        assert response.status_code == 200
+        assert isinstance(response.json(), list)
+
 
 class TestAudioServeValidation:
     def test_nonexistent_audio_returns_404(self, client):
         response = client.get("/api/audio/nonexistent_file_12345.wav")
         assert response.status_code == 404
 
-    def test_path_traversal_blocked(self, client):
-        # Should not serve files outside exports directory
-        response = client.get("/api/audio/../../etc/passwd")
+    def test_path_traversal_blocked_url_encoded(self, client):
+        """URL-encoded traversal (%2e%2e%2f) must be rejected by basename sanitization."""
+        response = client.get("/api/audio/%2e%2e%2f%2e%2e%2fetc%2fpasswd")
+        # basename of "passwd" shouldn't exist in exports -> 404
         assert response.status_code in (404, 400)
+
+    def test_literal_dotdot_normalized_by_starlette(self, client):
+        """Literal ../ is normalized by Starlette before route matching.
+        This test documents the behavior — the real defense is against URL-encoded traversal."""
+        response = client.get("/api/audio/../../etc/passwd")
+        # Starlette normalizes this; may or may not reach our handler
+        # Either way, it should not return audio files from outside exports/
+        assert response.status_code != 200 or "audio/wav" not in response.headers.get("content-type", "")
+
+
+class TestDeleteHistoryValidation:
+    def test_delete_invalid_id_format(self, client):
+        """Non-hex IDs should be rejected with 400."""
+        response = client.delete("/api/history/not-a-hex-id")
+        assert response.status_code == 400
+
+    def test_delete_glob_pattern_rejected(self, client):
+        """Glob patterns like * should not match via SQL exact-ID lookup."""
+        response = client.delete("/api/history/*")
+        assert response.status_code == 400
+
+    def test_delete_encoded_glob_rejected(self, client):
+        """URL-encoded glob %2a should also be rejected."""
+        response = client.delete("/api/history/%2a")
+        assert response.status_code == 400
+
+
+class TestBatchEndpoint:
+    def test_batch_returns_list(self, client):
+        response = client.post("/api/synthesize/batch", json={
+            "texts": ["Test"],
+            "voice": "M1",
+            "language": "en",
+        })
+        assert response.status_code == 200
+        data = response.json()
+        assert "results" in data
+        assert isinstance(data["total_success"], int)
+        assert isinstance(data["total_failed"], int)

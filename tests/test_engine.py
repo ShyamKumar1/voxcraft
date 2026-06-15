@@ -82,10 +82,122 @@ class TestConfig:
         from backend.config import PORT
         assert PORT == 8765
 
-    def test_default_host(self):
+    def test_default_host_is_localhost(self):
+        """Issue 4.3: Default bind should be 127.0.0.1, not 0.0.0.0."""
         from backend.config import HOST
-        assert HOST == "0.0.0.0"
+        assert HOST == "127.0.0.1"
 
     def test_data_dir_is_absolute(self):
         from backend.config import DATA_DIR
-        assert DATA_DIR  # Should not be empty
+        assert DATA_DIR
+
+    def test_max_concurrency_default(self):
+        from backend.config import MAX_CONCURRENCY
+        assert MAX_CONCURRENCY == 4
+
+    def test_db_path_configured(self):
+        from backend.config import DB_PATH
+        assert DB_PATH.endswith(".db")
+
+
+class TestExceptions:
+    def test_voice_not_found_error_is_value_error(self):
+        from backend.tts_engine import VoiceNotFoundError
+        err = VoiceNotFoundError("Voice 'X99' is not available")
+        assert isinstance(err, ValueError)
+        assert "X99" in str(err)
+
+    def test_engine_not_ready_error_is_runtime_error(self):
+        from backend.tts_engine import EngineNotReadyError
+        err = EngineNotReadyError("TTS engine could not be initialized")
+        assert isinstance(err, RuntimeError)
+
+
+class TestDataStore:
+    """Tests for the SQLite-backed data store."""
+
+    def test_init_db_creates_tables(self, tmp_path):
+        import os
+        os.environ["VOXCRAFT_DATA_DIR"] = str(tmp_path)
+        try:
+            from backend.data_store import init_db
+            import importlib
+            import backend.data_store as ds
+            importlib.reload(ds)
+            ds.DB_PATH = tmp_path / "voxcraft.db"
+            init_db()
+            import sqlite3
+            conn = sqlite3.connect(str(ds.DB_PATH))
+            tables = conn.execute(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
+            ).fetchall()
+            table_names = {t[0] for t in tables}
+            assert "exports" in table_names
+            assert "history" in table_names
+            assert "schema_version" in table_names
+            conn.close()
+        finally:
+            if "VOXCRAFT_DATA_DIR" in os.environ:
+                del os.environ["VOXCRAFT_DATA_DIR"]
+
+    def test_save_and_get_export(self, tmp_path):
+        import os
+        os.environ["VOXCRAFT_DATA_DIR"] = str(tmp_path)
+        try:
+            import importlib
+            import backend.data_store as ds
+            import backend.config as cfg
+            importlib.reload(cfg)
+            importlib.reload(ds)
+
+            ds.init_db()
+            meta = {
+                "id": "abcd1234",
+                "filename": "voxcraft_abcd1234_20260101_000000",
+                "text": "Hello world",
+                "voice": "M1",
+                "language": "en",
+                "duration_seconds": 2.5,
+                "format": "wav",
+                "sample_rate": 44100,
+                "speed": 1.0,
+                "quality": 8,
+                "created_at": "20260101_000000",
+                "audio_path": "/tmp/test.wav",
+            }
+            ds.save_export(meta)
+            result = ds.get_export("abcd1234")
+            assert result is not None
+            assert result["text"] == "Hello world"
+            assert result["voice"] == "M1"
+        finally:
+            if "VOXCRAFT_DATA_DIR" in os.environ:
+                del os.environ["VOXCRAFT_DATA_DIR"]
+
+    def test_get_history_returns_list(self, tmp_path):
+        import os
+        os.environ["VOXCRAFT_DATA_DIR"] = str(tmp_path)
+        try:
+            import importlib
+            import backend.data_store as ds
+            importlib.reload(ds)
+            ds.init_db()
+            history = ds.get_history(limit=10)
+            assert isinstance(history, list)
+        finally:
+            if "VOXCRAFT_DATA_DIR" in os.environ:
+                del os.environ["VOXCRAFT_DATA_DIR"]
+
+    def test_delete_nonexistent_returns_zero(self, tmp_path):
+        import os
+        os.environ["VOXCRAFT_DATA_DIR"] = str(tmp_path)
+        try:
+            import importlib
+            import backend.data_store as ds
+            importlib.reload(ds)
+            ds.init_db()
+            result = ds.delete_export("nonexistent_id")
+            assert result == 0
+        finally:
+            if "VOXCRAFT_DATA_DIR" in os.environ:
+                del os.environ["VOXCRAFT_DATA_DIR"]

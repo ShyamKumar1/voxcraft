@@ -24,6 +24,9 @@ and content creation — all running 100% locally on your machine.
 git clone https://github.com/ShyamKumar1/voxcraft.git
 cd voxcraft
 
+# Configure (optional)
+cp .env.example .env
+
 # Install dependencies
 cd backend
 pip install -r requirements.txt
@@ -38,9 +41,9 @@ open http://localhost:8765
 
 ## Tech Stack
 
-- **Backend**: Python 3.14 · FastAPI · Supertonic 3 (99M params ONNX)
-- **Frontend**: Vanilla JS · WaveSurfer.js · Modern CSS
-- **TTS Engine**: [Supertonic 3](https://github.com/supertone-inc/supertonic) — 11k⭐, 99M params, 31 languages, no GPU needed
+- **Backend**: Python 3.14 · FastAPI · Supertonic 3 (99M params ONNX) · SQLite
+- **Frontend**: Vanilla JS · WaveSurfer.js (vendored) · Inter font (vendored)
+- **100% Local**: All assets bundled — zero network calls at runtime after model download
 
 ## Keyboard Shortcuts
 
@@ -51,7 +54,7 @@ open http://localhost:8765
 
 ## Cost
 
-- **Software**: $0 — Fully open-source (Apache-2.0 / MIT)
+- **Software**: $0 — Fully open-source (MIT)
 - **Compute**: Your existing machine — M1 MacBook Air runs it effortlessly
 - **TTS Engine**: $0 — Supertonic is free and runs locally
 
@@ -61,11 +64,15 @@ open http://localhost:8765
 voxcraft/
 ├── backend/
 │   ├── app.py           FastAPI server with all endpoints
-│   ├── tts_engine.py    Supertonic wrapper (voices, export, history)
-│   └── config.py        Server configuration
+│   ├── tts_engine.py    Supertonic wrapper (voices, synthesis, concurrency)
+│   ├── data_store.py    SQLite-backed persistence layer
+│   └── config.py        Server configuration (env-var overridable)
 ├── frontend/
-│   └── index.html       Single-page application (no build step)
+│   ├── index.html       Single-page application (no build step)
+│   ├── fonts/           Inter font files (vendored, 5 weights)
+│   └── assets/          WaveSurfer.js (vendored)
+├── .env.example         Configuration template
 └── data/
-    ├── exports/         Generated audio files
-    └── history/         Generation metadata
+    ├── exports/         Generated WAV files
+    └── voxcraft.db      SQLite database (history, metadata)
 ```

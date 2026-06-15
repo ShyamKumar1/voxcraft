@@ -4,9 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>VoxCraft — Professional TTS Studio</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js" type="module"></script>
+<link rel="stylesheet" href="fonts/inter.css">
+<script src="assets/wavesurfer.esm.js" type="module"></script>
 <style>
 /* ═══ RESET & BASE ═══ */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -202,7 +201,7 @@ body{
   padding:0.75rem 1rem;background:var(--bg3);border:1px solid var(--border);
   border-radius:var(--radius);font-size:0.85rem;color:var(--text);
   box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:0.5rem;
-  animation:slideUp 0.3s ease;
+  animation:slideUp 0.3s ease;transition:opacity 0.3s ease;
 }
 .toast.success{border-color:var(--green)}
 .toast.error{border-color:var(--red)}
@@ -235,7 +234,7 @@ body{
   <!-- Top Bar -->
   <header class="topbar">
     <div class="topbar-brand">
-      <svg viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="url(#g)"/><path d="M10 12v8a2 2 0 004 0v-2m4-6v8a2 2 0 004 0v-2" stroke="#fff" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="10" r="2" fill="#fff"/><defs><linearGradient id="g" x1="0" y1="0" x2="32" y2="32"><stop offset="0%" stop-color="#6366f1"/><stop offset="100%" stop-color="#a78bfa"/></linearGradient></defs></svg>
+      <svg viewBox="0 0 32 32" fill="none" aria-label="VoxCraft logo"><rect width="32" height="32" rx="8" fill="url(#g)"/><path d="M10 12v8a2 2 0 004 0v-2m4-6v8a2 2 0 004 0v-2" stroke="#fff" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="10" r="2" fill="#fff"/><defs><linearGradient id="g" x1="0" y1="0" x2="32" y2="32"><stop offset="0%" stop-color="#6366f1"/><stop offset="100%" stop-color="#a78bfa"/></linearGradient></defs></svg>
       <h1>VoxCraft</h1>
       <span>Studio</span>
     </div>
@@ -263,12 +262,12 @@ body{
             <span class="char-count" id="charCount">0 / 5,000</span>
           </div>
           <div class="tag-toolbar">
-            <button class="tag-btn" data-tag="<laugh>">😂 laugh</button>
-            <button class="tag-btn" data-tag="<breath>">🫁 breath</button>
-            <button class="tag-btn" data-tag="<sigh>">😮‍💨 sigh</button>
-            <button class="tag-btn" data-tag="<whisper>">🤫 whisper</button>
-            <button class="tag-btn" data-tag="<say>">🎙️ say</button>
-            <button class="tag-btn" data-tag="<cough>">🤧 cough</button>
+            <button type="button" class="tag-btn" data-tag="<laugh>">😂 laugh</button>
+            <button type="button" class="tag-btn" data-tag="<breath>">🫁 breath</button>
+            <button type="button" class="tag-btn" data-tag="<sigh>">😮‍💨 sigh</button>
+            <button type="button" class="tag-btn" data-tag="<whisper>">🤫 whisper</button>
+            <button type="button" class="tag-btn" data-tag="<say>">🎙️ say</button>
+            <button type="button" class="tag-btn" data-tag="<cough>">🤧 cough</button>
           </div>
         </div>
       </div>
@@ -305,18 +304,18 @@ body{
       </div>
 
       <!-- Generate -->
-      <button class="generate-btn" id="generateBtn">
+      <button class="generate-btn" id="generateBtn" type="button">
         <span class="spinner"></span>
         <span class="btn-text">Generate Speech</span>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-label="Generate"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </button>
 
       <!-- Player -->
       <div class="panel player-section" id="playerSection" style="display:none">
         <div class="panel-body">
           <div class="player-controls">
-            <button class="play-btn" id="playBtn">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <button class="play-btn" id="playBtn" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-label="Play"><polygon points="5 3 19 12 5 21 5 3"/></svg>
             </button>
             <div class="player-info">
               <div class="filename" id="playerFilename">output.wav</div>
@@ -330,16 +329,16 @@ body{
           </div>
           <div class="waveform-container" id="waveform"></div>
           <div class="action-buttons">
-            <button class="action-btn primary" id="downloadBtn">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            <button class="action-btn primary" id="downloadBtn" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-label="Download word file"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
               Download WAV
             </button>
-            <button class="action-btn" id="copyBtn">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            <button class="action-btn" id="copyBtn" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-label="Copy text to clipboard"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
               Copy Text
             </button>
-            <button class="action-btn" id="regenerateBtn">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/></svg>
+            <button class="action-btn" id="regenerateBtn" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-label="Regenerate audio"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15"/></svg>
               Regenerate
             </button>
           </div>
@@ -357,7 +356,7 @@ body{
           </div>
           <div class="history-list" id="historyList">
             <div class="empty-state">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-label="No history items"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
               <p>No generations yet.<br>Your history will appear here.</p>
             </div>
           </div>
@@ -372,7 +371,7 @@ body{
 <script type="module">
 /* ═══ VoxCraft Frontend — Studio Application ═══ */
 
-import WaveSurfer from 'https://unpkg.com/wavesurfer.js@7/dist/wavesurfer.esm.js'
+import WaveSurfer from './assets/wavesurfer.esm.js'
 
 const API = window.location.origin
 
@@ -390,6 +389,7 @@ const state = {
 }
 
 let wavesurfer = null
+let healthPollInterval = null
 
 // ─── DOM Refs ───
 const $ = s => document.querySelector(s)
@@ -408,9 +408,22 @@ async function checkHealth() {
   try {
     const res = await fetch(`${API}/api/health`)
     const data = await res.json()
-    $('#statusDot').classList.add('online')
-    $('#statusText').textContent = `Online · ${data.voices_available} voices · ${data.languages_available} languages`
+    if (data.engine_ready) {
+      $('#statusDot').classList.add('online')
+      $('#statusText').textContent = `Online · ${data.voices_available} voices · ${data.languages_available} languages`
+      if (healthPollInterval) {
+        clearInterval(healthPollInterval)
+        healthPollInterval = null
+      }
+    } else {
+      $('#statusDot').classList.remove('online')
+      $('#statusText').textContent = 'Initializing TTS engine…'
+      if (!healthPollInterval) {
+        healthPollInterval = setInterval(checkHealth, 3000)
+      }
+    }
   } catch {
+    $('#statusDot').classList.remove('online')
     $('#statusText').textContent = 'Offline — Start the backend server'
   }
 }
@@ -444,7 +457,7 @@ function renderVoices() {
   grid.querySelectorAll('.voice-card').forEach(card => {
     card.addEventListener('click', () => {
       state.selectedVoice = card.dataset.voice
-      grid.querySelectorAll('.voice-card').forEach(c => c.classList.remove('selected'))
+      grid.querySelectorAll('.voice-card').forEach(c => { c.classList.remove('selected') })
       card.classList.add('selected')
       const voice = state.voices.find(v => v.name === state.selectedVoice)
       $('#selectedVoiceName').textContent = voice ? voice.display_name : state.selectedVoice
@@ -488,8 +501,9 @@ async function generate() {
     })
 
     if (!res.ok) {
-      const err = await res.json()
-      throw new Error(err.detail || 'Generation failed')
+      let errorMsg = 'Generation failed'
+      try { const err = await res.json(); errorMsg = err.detail || errorMsg } catch {}
+      throw new Error(errorMsg)
     }
 
     const data = await res.json()

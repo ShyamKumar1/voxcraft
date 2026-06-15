@@ -1,21 +1,25 @@
 """VoxCraft API — Professional TTS Studio Backend.
 
 Endpoints:
-  GET  /api/voices        — List all available voices with metadata
-  GET  /api/languages     — List supported languages
-  GET  /api/tags          — List expression tags
-  POST /api/synthesize    — Generate speech from text
-  POST /api/synthesize/batch — Batch text-to-speech
-  GET  /api/history       — Generation history
-  GET  /api/audio/{path}  — Serve generated audio files
-  GET  /api/health        — Health check
-  GET  /{path:path}       — Serve frontend SPA (catch-all fallback)
+  GET  /api/health           — Health check with engine status
+  GET  /api/voices           — List all available voices with metadata
+  GET  /api/languages        — List supported languages
+  GET  /api/tags             — List expression tags
+  POST /api/synthesize       — Generate speech from text
+  POST /api/synthesize/batch — Concurrent batch text-to-speech
+  GET  /api/history          — Generation history (supports ?search=)
+  DELETE /api/history/{id}   — Delete a generation
+  GET  /api/audio/{path}     — Serve generated audio files
+  GET  /{path:path}          — Serve frontend SPA (catch-all fallback)
 """
 
 from __future__ import annotations
 
-import os
+import logging
 import mimetypes
+import os
+import re
+from contextlib import asynccontextmanager
 from pathlib import Path
 from urllib.parse import unquote
 
@@ -30,22 +34,59 @@ from .tts_engine import (
     LANGUAGES,
     PRESET_VOICES,
     EXPORTS_DIR,
+    EngineNotReadyError,
+    VoiceNotFoundError,
     get_engine,
 )
+
+# ─── Logging ──────────────────────────────────────────────────────────────────
+
+logging.basicConfig(
+    level=getattr(logging, config.LOG_LEVEL, logging.INFO),
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+logger = logging.getLogger("voxcraft.api")
+
+# ─── Lifespan ─────────────────────────────────────────────────────────────────
+
+@asynccontextmanager
+async def lifespan(application: FastAPI):
+    """Startup and shutdown lifecycle."""
+    logger.info("VoxCraft starting on %s:%s", config.HOST, config.PORT)
+    logger.info("Data directory: %s", config.DATA_DIR)
+    logger.info("Voices: %d, Languages: %d", len(PRESET_VOICES), len(LANGUAGES))
+    yield
+    logger.info("VoxCraft shutting down")
+
+
+# ─── FastAPI App ──────────────────────────────────────────────────────────────
 
 app = FastAPI(
     title="VoxCraft TTS Studio",
     description="Enterprise-grade text-to-speech studio powered by Supertonic 3",
-    version="1.0.0",
+    version="1.0.1",
+    docs_url="/docs",
+    redoc_url=None,
+    lifespan=lifespan,
 )
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# CORS: allow same-origin only when binding to localhost.
+# For advanced network deployments, override VOXCRAFT_CORS_ORIGINS env var.
+_cors_origins = os.getenv("VOXCRAFT_CORS_ORIGINS", "").split(",") if os.getenv("VOXCRAFT_CORS_ORIGINS") else []
+if not _cors_origins and config.HOST in ("127.0.0.1", "localhost"):
+    _cors_origins = [f"http://localhost:{config.PORT}", f"http://127.0.0.1:{config.PORT}"]
+if _cors_origins:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=_cors_origins,
+        allow_credentials=False,
+        allow_methods=["GET", "POST", "DELETE"],
+        allow_headers=["Content-Type"],
+    )
+    logger.info("CORS enabled for origins: %s", _cors_origins)
+else:
+    logger.info("CORS disabled (no origins configured)")
 
 FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
 INDEX_HTML = FRONTEND_DIR / "index.html"
@@ -79,7 +120,6 @@ class BatchSynthesizeRequest(BaseModel):
     language: str = Field(default="en")
     speed: float = Field(default=1.05, ge=0.7, le=2.0)
     quality: int = Field(default=8, ge=5, le=12)
-    merge: bool = Field(default=False, description="Merge all audio into single file")
 
 
 class SynthesizeResponse(BaseModel):
@@ -93,24 +133,57 @@ class SynthesizeResponse(BaseModel):
     sample_rate: int = 44100
 
 
-class ErrorResponse(BaseModel):
-    success: bool = False
-    error: str
+class BatchItemResponse(BaseModel):
+    index: int
+    text: str
+    success: bool
+    id: str | None = None
+    audio_url: str | None = None
+    duration_seconds: float | None = None
+    error: str | None = None
+
+
+class BatchSynthesizeResponse(BaseModel):
+    success: bool
+    total_success: int
+    total_failed: int
+    total_duration_seconds: float
+    results: list[BatchItemResponse]
+
+
+# ─── Helpers ─────────────────────────────────────────────────────────────────
+
+_ID_PATTERN = re.compile(r"^[0-9a-f]{8,12}$")
+
+
+def _validate_generation_id(generation_id: str) -> None:
+    """Validate that a generation ID is a hex string. Raises HTTPException on failure."""
+    if not _ID_PATTERN.match(generation_id):
+        raise HTTPException(status_code=400, detail="Invalid generation ID format")
+
+
+def _sanitize_error(exc: Exception) -> str:
+    """Return a safe error message, logging the full traceback."""
+    logger.error("Request failed: %s", exc, exc_info=True)
+    return "An internal error occurred. Please check the server logs for details."
 
 
 # ─── API Endpoints ──────────────────────────────────────────────────────────
 
 @app.get("/api/health")
 async def health() -> dict:
-    """Health check with engine status."""
+    """Health check with engine status and active synthesis count."""
     try:
         engine = get_engine()
         ready = engine.is_ready
+        active = engine.active_syntheses
     except Exception:
         ready = False
+        active = 0
     return {
         "status": "healthy" if ready else "initializing",
         "engine_ready": ready,
+        "active_syntheses": active,
         "voices_available": len(PRESET_VOICES),
         "languages_available": len(LANGUAGES),
     }
@@ -135,11 +208,11 @@ async def list_tags() -> dict[str, str]:
 
 
 @app.post("/api/synthesize", response_model=SynthesizeResponse)
-async def synthesize(req: SynthesizeRequest) -> dict:
+async def synthesize(req: SynthesizeRequest) -> SynthesizeResponse:
     """Generate speech from text with selected voice and parameters."""
     engine = get_engine()
     if not engine.is_ready:
-        raise HTTPException(status_code=503, detail="TTS engine is not ready — model still downloading")
+        raise HTTPException(status_code=503, detail="TTS engine is initializing — please wait")
 
     try:
         wav, duration = engine.synthesize(
@@ -149,14 +222,21 @@ async def synthesize(req: SynthesizeRequest) -> dict:
             speed=req.speed,
             quality=req.quality,
         )
+    except VoiceNotFoundError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except EngineNotReadyError as e:
+        raise HTTPException(status_code=503, detail=str(e))
     except RuntimeError as e:
         raise HTTPException(status_code=503, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Generation failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=_sanitize_error(e))
 
-    meta = engine.export_for_platform(wav, req.text, req.voice, req.language, duration_seconds=duration)
+    meta = engine.export_for_platform(
+        wav, req.text, req.voice, req.language,
+        duration_seconds=duration, speed=req.speed, quality=req.quality,
+    )
     return SynthesizeResponse(
         success=True,
         audio_url=f"/api/audio/{meta['filename']}.wav",
@@ -168,47 +248,77 @@ async def synthesize(req: SynthesizeRequest) -> dict:
     )
 
 
-@app.post("/api/synthesize/batch")
-async def synthesize_batch(req: BatchSynthesizeRequest) -> dict:
-    """Generate speech for multiple texts."""
+@app.post("/api/synthesize/batch", response_model=BatchSynthesizeResponse)
+async def synthesize_batch(req: BatchSynthesizeRequest) -> BatchSynthesizeResponse:
+    """Generate speech for multiple texts concurrently."""
     engine = get_engine()
     if not engine.is_ready:
-        raise HTTPException(status_code=503, detail="TTS engine is not ready")
+        raise HTTPException(status_code=503, detail="TTS engine is initializing")
 
-    results = []
+    try:
+        raw_results = await engine.synthesize_batch(
+            texts=req.texts, voice=req.voice, lang=req.language,
+            speed=req.speed, quality=req.quality,
+        )
+    except VoiceNotFoundError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except EngineNotReadyError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=_sanitize_error(e))
+
+    results: list[BatchItemResponse] = []
     total_duration = 0.0
-    for i, text in enumerate(req.texts):
-        if not text.strip():
-            continue
-        try:
-            wav, duration = engine.synthesize(
-                text=text, voice=req.voice, lang=req.language,
-                speed=req.speed, quality=req.quality,
-            )
-            meta = engine.export_for_platform(wav, text, req.voice, req.language, duration_seconds=duration)
-            meta["index"] = i
-            total_duration += duration
-            results.append(meta)
-        except Exception as e:
-            results.append({"index": i, "text": text, "error": str(e), "success": False})
+    success_count = 0
+    failed_count = 0
 
-    return {
-        "success": True,
-        "total_items": len(results),
-        "total_duration_seconds": round(total_duration, 2),
-        "results": results,
-    }
+    for r in raw_results:
+        if r["success"]:
+            wav, duration = r["wav"], r["duration"]
+            meta = engine.export_for_platform(
+                wav, r["text"], req.voice, req.language,
+                duration_seconds=duration, speed=req.speed, quality=req.quality,
+            )
+            total_duration += duration
+            success_count += 1
+            results.append(BatchItemResponse(
+                index=r["index"],
+                text=r["text"],
+                success=True,
+                id=meta["id"],
+                audio_url=f"/api/audio/{meta['filename']}.wav",
+                duration_seconds=meta["duration_seconds"],
+            ))
+        else:
+            failed_count += 1
+            results.append(BatchItemResponse(
+                index=r["index"],
+                text=r["text"],
+                success=False,
+                error=r.get("error", "Unknown error"),
+            ))
+
+    return BatchSynthesizeResponse(
+        success=failed_count == 0,
+        total_success=success_count,
+        total_failed=failed_count,
+        total_duration_seconds=round(total_duration, 2),
+        results=results,
+    )
 
 
 @app.get("/api/history")
-async def get_history(limit: int = Query(default=50, ge=1, le=200)) -> list[dict]:
-    """Get recent generation history."""
-    return get_engine().get_history(limit=limit)
+async def get_history(
+    limit: int = Query(default=50, ge=1, le=200),
+    search: str = Query(default=None, description="Search by text or voice"),
+) -> list[dict]:
+    """Get recent generation history with optional search."""
+    return get_engine().get_history(limit=limit, search=search)
 
 
 @app.get("/api/audio/{filename:path}")
 async def serve_audio(filename: str) -> Response:
-    """Serve a generated audio file."""
+    """Serve a generated audio file. Uses basename to prevent path traversal."""
     safe_name = os.path.basename(unquote(filename))
     audio_path = EXPORTS_DIR / safe_name
     if not audio_path.exists():
@@ -220,15 +330,16 @@ async def serve_audio(filename: str) -> Response:
 
 @app.delete("/api/history/{generation_id}")
 async def delete_history(generation_id: str) -> dict:
-    """Delete a generation from history."""
-    count = 0
-    for f in Path(config.DATA_DIR).rglob(f"*{generation_id}*"):
-        try:
-            os.remove(f)
-            count += 1
-        except OSError:
-            pass
-    return {"success": True, "deleted": generation_id, "files_removed": count}
+    """Delete a generation from history by exact ID. Uses SQLite — no glob injection."""
+    _validate_generation_id(generation_id)
+    try:
+        deleted = get_engine().delete_export(generation_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=_sanitize_error(e))
+
+    if deleted == 0:
+        raise HTTPException(status_code=404, detail="Generation not found")
+    return {"success": True, "deleted": generation_id, "records_removed": deleted}
 
 
 # ─── Frontend SPA Catch-all (must be LAST — matches after API routes) ───────
@@ -236,18 +347,18 @@ async def delete_history(generation_id: str) -> dict:
 @app.get("/{full_path:path}", include_in_schema=False)
 async def serve_frontend(full_path: str) -> Response:
     """Serve frontend static files or fall back to index.html (SPA)."""
-    # Block any /api paths from reaching here (shouldn't happen, but safety)
     if full_path.startswith("api/"):
         raise HTTPException(status_code=404, detail="Not found")
 
-    # If empty path, serve index.html
     if not full_path:
-        return HTMLResponse(INDEX_HTML.read_bytes() if INDEX_HTML.exists() else "<h1>Not found</h1>", status_code=200)
+        return HTMLResponse(
+            INDEX_HTML.read_bytes() if INDEX_HTML.exists() else "<h1>Not found</h1>",
+            status_code=200,
+        )
 
     requested = FRONTEND_DIR / full_path
-    # Security: only serve files inside FRONTEND_DIR
     try:
-        requested.relative_to(FRONTEND_DIR)
+        requested.resolve().relative_to(FRONTEND_DIR.resolve())
     except ValueError:
         raise HTTPException(status_code=404, detail="Invalid path")
 
@@ -255,7 +366,6 @@ async def serve_frontend(full_path: str) -> Response:
         content_type, _ = mimetypes.guess_type(str(requested))
         return FileResponse(str(requested), media_type=content_type or "application/octet-stream")
 
-    # SPA fallback: every unmatched path serves index.html
     if INDEX_HTML.exists():
         return HTMLResponse(INDEX_HTML.read_bytes(), status_code=200)
     return HTMLResponse("<h1>Frontend not built</h1>", status_code=200)
@@ -266,14 +376,14 @@ async def serve_frontend(full_path: str) -> Response:
 if __name__ == "__main__":
     import uvicorn
     print("╔══════════════════════════════════════════╗")
-    print("║        VoxCraft TTS Studio v1.0          ║")
+    print("║        VoxCraft TTS Studio v1.0.1        ║")
     print("║  Professional Text-to-Speech Studio      ║")
     print("╚══════════════════════════════════════════╝")
     print("")
-    print(  "  Engine: Supertonic 3 (99M params, ONNX)")
+    print("  Engine: Supertonic 3 (99M params, ONNX)")
     print(f"  Voices: {len(PRESET_VOICES)} styles available")
     print(f"  Languages: {len(LANGUAGES)} supported")
     print(f"  Server: http://{config.HOST}:{config.PORT}")
     print(f"  API Docs: http://{config.HOST}:{config.PORT}/docs")
     print("")
-    uvicorn.run(app, host=config.HOST, port=config.PORT, log_level="info")
+    uvicorn.run(app, host=config.HOST, port=config.PORT, log_level=config.LOG_LEVEL.lower())

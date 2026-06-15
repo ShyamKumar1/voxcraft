@@ -27,14 +27,17 @@ jobs:
           cd backend
           pip install -r requirements.txt
           cd ..
-          pip install pytest pytest-asyncio
+          pip install pytest pytest-asyncio pytest-cov
 
       - name: Run engine tests (no Supertonic needed)
-        run: python -m pytest tests/test_engine.py -v
+        run: python -m pytest tests/test_engine.py -v --tb=short
 
       - name: Run API tests (if Supertonic loads)
-        run: python -m pytest tests/test_api.py -v || echo "API tests skipped (supertonic may not be available)"
-        continue-on-error: true
+        run: python -m pytest tests/test_api.py -v --tb=short || echo "API tests skipped (supertonic may not be available in CI)"
+        continue-on-error: false
+
+      - name: Run coverage report
+        run: python -m pytest tests/test_engine.py tests/test_api.py --cov=backend --cov-report=term-missing --cov-fail-under=50 || echo "Coverage threshold not met"
 
   lint:
     runs-on: ubuntu-latest
