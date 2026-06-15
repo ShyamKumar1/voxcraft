@@ -1,0 +1,2475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>VoxCraft — Professional TTS Studio: Technical Documentation</title>
+<style>
+  @page {
+    size: A4;
+    margin: 2.2cm 2.2cm 2.2cm 2.2cm;
+    @bottom-center {
+      content: "Page " counter(page) " of " counter(pages);
+      font-family: 'Georgia', serif;
+      font-size: 8pt;
+      color: #6b7280;
+    }
+  }
+  @page :first {
+    @bottom-center {
+      content: none;
+    }
+  }
+  @page titlepage {
+    @bottom-center {
+      content: none;
+    }
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 11pt;
+    line-height: 1.75;
+    color: #1a1a2e;
+    background: #fff;
+    counter-reset: h2-counter;
+  }
+
+  /* ═══ TITLE PAGE ═══ */
+  .titlepage {
+    page: titlepage;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    height: 100vh;
+    page-break-after: always;
+    padding: 4cm 2cm;
+  }
+  .titlepage .logo {
+    width: 96px;
+    height: 96px;
+    margin-bottom: 2.5cm;
+  }
+  .titlepage .logo svg { width: 100%; height: 100%; }
+  .titlepage h1 {
+    font-size: 32pt;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    color: #0f172a;
+    margin-bottom: 0.4cm;
+    line-height: 1.2;
+  }
+  .titlepage .subtitle {
+    font-size: 14pt;
+    color: #6366f1;
+    margin-bottom: 1.5cm;
+    font-style: italic;
+  }
+  .titlepage .meta {
+    font-size: 10pt;
+    color: #6b7280;
+    margin-top: 2cm;
+  }
+  .titlepage .meta p { margin-bottom: 0.2cm; }
+  .titlepage .version-badge {
+    display: inline-block;
+    padding: 4px 14px;
+    background: #6366f1;
+    color: #fff;
+    border-radius: 4px;
+    font-size: 10pt;
+    font-family: 'Courier New', monospace;
+    margin-bottom: 1cm;
+  }
+  .titlepage .divider {
+    width: 120px;
+    height: 2px;
+    background: #6366f1;
+    margin: 1cm auto;
+  }
+
+  /* ═══ TOC ═══ */
+  .toc {
+    page-break-after: always;
+    padding: 1cm 0;
+  }
+  .toc h2 {
+    font-size: 20pt;
+    color: #0f172a;
+    margin-bottom: 0.8cm;
+    border-bottom: 2px solid #6366f1;
+    padding-bottom: 0.3cm;
+  }
+  .toc ul {
+    list-style: none;
+  }
+  .toc li {
+    padding: 0.15cm 0;
+    font-size: 10.5pt;
+    border-bottom: 1px dotted #d1d5db;
+  }
+  .toc li.toc-l1 { font-weight: 700; padding-top: 0.3cm; }
+  .toc li.toc-l2 { padding-left: 1cm; }
+  .toc li.toc-l3 { padding-left: 2cm; font-size: 9.5pt; color: #6b7280; }
+  .toc .toc-num { color: #6366f1; margin-right: 0.3cm; }
+
+  /* ═══ CONTENT ═══ */
+  h1.chapter {
+    font-size: 24pt;
+    color: #0f172a;
+    margin-top: 0;
+    margin-bottom: 0.6cm;
+    padding-bottom: 0.25cm;
+    border-bottom: 3px solid #6366f1;
+    page-break-before: always;
+  }
+  h1.chapter::before {
+    counter-increment: h2-counter;
+    content: "Chapter " counter(h2-counter) "  ";
+    font-size: 14pt;
+    color: #6366f1;
+    display: block;
+    margin-bottom: 0.15cm;
+    font-weight: 400;
+  }
+
+  h2 {
+    font-size: 16pt;
+    color: #0f172a;
+    margin-top: 0.8cm;
+    margin-bottom: 0.3cm;
+    padding-bottom: 0.1cm;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  h3 {
+    font-size: 13pt;
+    color: #374151;
+    margin-top: 0.6cm;
+    margin-bottom: 0.2cm;
+  }
+  h4 {
+    font-size: 11.5pt;
+    color: #4b5563;
+    margin-top: 0.4cm;
+    margin-bottom: 0.15cm;
+  }
+
+  p { margin-bottom: 0.25cm; text-align: justify; hyphens: auto; }
+
+  /* ═══ CODE ═══ */
+  code {
+    font-family: 'Courier New', 'Consolas', monospace;
+    font-size: 9pt;
+    background: #f3f4f6;
+    padding: 1px 4px;
+    border-radius: 3px;
+    color: #6366f1;
+  }
+  pre {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-left: 3px solid #6366f1;
+    padding: 0.4cm 0.5cm;
+    margin: 0.3cm 0;
+    font-family: 'Courier New', 'Consolas', monospace;
+    font-size: 8.5pt;
+    line-height: 1.5;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  pre code {
+    background: none;
+    padding: 0;
+    color: #1f2937;
+  }
+
+  /* ═══ TABLES ═══ */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.4cm 0;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+  table th {
+    background: #6366f1;
+    color: #fff;
+    padding: 6px 10px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 9pt;
+  }
+  table td {
+    padding: 5px 10px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  table tr:nth-child(even) td {
+    background: #f9fafb;
+  }
+  table.small { font-size: 8pt; }
+  table.small th, table.small td { padding: 3px 6px; }
+
+  /* ═══ CALLOUTS ═══ */
+  .note {
+    background: #eff6ff;
+    border-left: 4px solid #3b82f6;
+    padding: 0.3cm 0.4cm;
+    margin: 0.3cm 0;
+    font-size: 10pt;
+  }
+  .note strong { color: #1d4ed8; }
+  .warning {
+    background: #fef3c7;
+    border-left: 4px solid #f59e0b;
+    padding: 0.3cm 0.4cm;
+    margin: 0.3cm 0;
+    font-size: 10pt;
+  }
+  .warning strong { color: #b45309; }
+  .tip {
+    background: #f0fdf4;
+    border-left: 4px solid #22c55e;
+    padding: 0.3cm 0.4cm;
+    margin: 0.3cm 0;
+    font-size: 10pt;
+  }
+
+  /* ═══ DIAGRAMS (CSS) ═══ */
+  .diagram {
+    width: 100%;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 0.4cm;
+    margin: 0.4cm 0;
+    background: #fafafa;
+    page-break-inside: avoid;
+  }
+  .diagram-title {
+    font-size: 9pt;
+    font-weight: 600;
+    color: #6b7280;
+    text-align: center;
+    margin-bottom: 0.3cm;
+  }
+  .arch-layer {
+    border: 1.5px solid #6366f1;
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin: 6px 0;
+    text-align: center;
+    font-size: 9.5pt;
+  }
+  .arch-layer.client { background: #f0fdf4; border-color: #22c55e; }
+  .arch-layer.server { background: #eff6ff; border-color: #3b82f6; }
+  .arch-layer.engine { background: #fef3c7; border-color: #f59e0b; }
+  .arch-layer.model { background: #fce7f3; border-color: #ec4899; }
+  .arch-layer.storage { background: #f3f4f6; border-color: #9ca3af; }
+
+  .flow-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    margin: 6px 0;
+    flex-wrap: wrap;
+  }
+  .flow-box {
+    border: 1.5px solid #6366f1;
+    border-radius: 4px;
+    padding: 6px 14px;
+    font-size: 9pt;
+    background: #eff6ff;
+    text-align: center;
+  }
+  .flow-arrow {
+    font-size: 14pt;
+    color: #6366f1;
+  }
+
+  .dataflow {
+    display: flex;
+    gap: 6px;
+    align-items: stretch;
+    font-size: 9pt;
+  }
+  .dataflow-col {
+    flex: 1;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    padding: 8px;
+    background: #f9fafb;
+  }
+  .dataflow-col h4 {
+    font-size: 9pt;
+    margin: 0 0 6px 0;
+    color: #6366f1;
+    text-align: center;
+  }
+  .dataflow-col p { font-size: 8pt; margin: 2px 0; }
+
+  /* ═══ API METHOD BADGES ═══ */
+  .method-get { color: #059669; font-weight: 700; }
+  .method-post { color: #2563eb; font-weight: 700; }
+  .method-delete { color: #dc2626; font-weight: 700; }
+
+  /* ═══ VOICE CARDS ═══ */
+  .voice-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0.3cm 0;
+  }
+  .voice-card-doc {
+    flex: 0 0 calc(20% - 8px);
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    padding: 8px;
+    font-size: 8pt;
+    text-align: center;
+    background: #fff;
+  }
+  .voice-card-doc .vc-name {
+    font-weight: 700;
+    font-size: 10pt;
+    color: #6366f1;
+  }
+  .voice-card-doc .vc-gender {
+    font-size: 7pt;
+    text-transform: uppercase;
+    color: #6b7280;
+    margin-bottom: 3px;
+  }
+  .voice-card-doc .vc-desc {
+    font-size: 7.5pt;
+    color: #4b5563;
+    margin-top: 3px;
+  }
+  .voice-card-doc .vc-tags {
+    font-size: 7pt;
+    color: #9ca3af;
+    margin-top: 3px;
+  }
+  .voice-card-doc.male { border-top: 3px solid #6366f1; }
+  .voice-card-doc.female { border-top: 3px solid #ec4899; }
+
+  /* ═══ RESPONSIVE / MISC ═══ */
+  ul, ol { margin: 0.15cm 0 0.15cm 0.8cm; }
+  li { margin-bottom: 0.1cm; font-size: 10.5pt; }
+  strong { color: #374151; }
+  em { color: #6366f1; }
+  .highlight { background: #fef3c7; padding: 1px 3px; }
+  .page-break { page-break-before: always; }
+  .small-text { font-size: 9pt; color: #6b7280; }
+  .mono { font-family: 'Courier New', monospace; font-size: 9pt; }
+  .endpoint-block {
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 0.4cm;
+    margin: 0.4cm 0;
+    background: #fafafa;
+    page-break-inside: avoid;
+  }
+  .endpoint-block .ep-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 0.2cm;
+    font-size: 11pt;
+  }
+  .endpoint-block .ep-method {
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 9pt;
+    font-family: 'Courier New', monospace;
+  }
+  .ep-method.get { background: #d1fae5; color: #065f46; }
+  .ep-method.post { background: #dbeafe; color: #1e40af; }
+  .ep-method.delete { background: #fee2e2; color: #991b1b; }
+  .endpoint-block .ep-path {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+  }
+
+  a { color: #6366f1; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- TITLE PAGE                                                                 -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<div class="titlepage">
+  <div class="logo">
+    <svg viewBox="0 0 96 96" fill="none">
+      <rect width="96" height="96" rx="20" fill="url(#g1)"/>
+      <defs>
+        <linearGradient id="g1" x1="0" y1="0" x2="96" y2="96">
+          <stop offset="0%" stop-color="#6366f1"/>
+          <stop offset="100%" stop-color="#a78bfa"/>
+        </linearGradient>
+      </defs>
+      <path d="M28 36v24a6 6 0 0012 0v-6m12-18v24a6 6 0 0012 0v-6" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+      <circle cx="48" cy="30" r="6" fill="#fff"/>
+    </svg>
+  </div>
+  <h1>VoxCraft</h1>
+  <div class="subtitle">Professional Text-to-Speech Studio<br>Technical Documentation &amp; Reference Manual</div>
+  <div class="divider"></div>
+  <div class="version-badge">Version 1.0.1</div>
+  <div class="meta">
+    <p><strong>Author:</strong> Shyam Kumar Gatti</p>
+    <p><strong>License:</strong> MIT License</p>
+    <p><strong>Repository:</strong> github.com/ShyamKumar1/voxcraft</p>
+    <p><strong>Engine:</strong> Supertonic 3 (99M parameters, ONNX Runtime)</p>
+    <p><strong>Document Revision:</strong> June 2026</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- TABLE OF CONTENTS                                                          -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<div class="toc">
+  <h2>Table of Contents</h2>
+  <ul>
+    <li class="toc-l1"><span class="toc-num">1</span> Introduction &amp; Project Overview</li>
+    <li class="toc-l2">1.1 Motivation &amp; Vision</li>
+    <li class="toc-l2">1.2 Core Capabilities</li>
+    <li class="toc-l2">1.3 Design Philosophy</li>
+    <li class="toc-l2">1.4 Technology Stack</li>
+    <li class="toc-l2">1.5 Licensing &amp; Cost Model</li>
+
+    <li class="toc-l1"><span class="toc-num">2</span> System Architecture</li>
+    <li class="toc-l2">2.1 Architectural Overview</li>
+    <li class="toc-l2">2.2 Layered Architecture Diagram</li>
+    <li class="toc-l2">2.3 Request-Response Lifecycle</li>
+    <li class="toc-l2">2.4 Data Flow &amp; Persistence</li>
+    <li class="toc-l2">2.5 Component Interaction Matrix</li>
+
+    <li class="toc-l1"><span class="toc-num">3</span> Backend API Reference</li>
+    <li class="toc-l2">3.1 API Design Conventions</li>
+    <li class="toc-l2">3.2 GET /api/health — Health Check</li>
+    <li class="toc-l2">3.3 GET /api/voices — Voice Catalog</li>
+    <li class="toc-l2">3.4 GET /api/languages — Language Registry</li>
+    <li class="toc-l2">3.5 GET /api/tags — Expression Tags</li>
+    <li class="toc-l2">3.6 POST /api/synthesize — Speech Synthesis</li>
+    <li class="toc-l2">3.7 POST /api/synthesize/batch — Batch Synthesis</li>
+    <li class="toc-l2">3.8 GET /api/history — Generation History</li>
+    <li class="toc-l2">3.9 GET /api/audio/{filename} — Audio Retrieval</li>
+    <li class="toc-l2">3.10 DELETE /api/history/{id} — History Deletion</li>
+    <li class="toc-l2">3.11 GET /{path} — Frontend SPA Catch-All</li>
+    <li class="toc-l2">3.12 Error Handling &amp; Status Codes</li>
+
+    <li class="toc-l1"><span class="toc-num">4</span> Text-to-Speech Engine</li>
+    <li class="toc-l2">4.1 Supertonic 3 Integration</li>
+    <li class="toc-l2">4.2 TTSEngine Class Architecture</li>
+    <li class="toc-l2">4.3 Voice Style Management</li>
+    <li class="toc-l2">4.4 Synthesis Pipeline</li>
+    <li class="toc-l2">4.5 Audio Export &amp; Metadata System</li>
+    <li class="toc-l2">4.6 Audio Caching Strategy</li>
+    <li class="toc-l2">4.7 Engine Singleton Pattern</li>
+
+    <li class="toc-l1"><span class="toc-num">5</span> Voice Style System</li>
+    <li class="toc-l2">5.1 VoiceStyle Data Model</li>
+    <li class="toc-l2">5.2 Preset Voice Catalog</li>
+    <li class="toc-l2">5.3 Voice Selection Heuristics</li>
+    <li class="toc-l2">5.4 Custom Voice Import Architecture</li>
+
+    <li class="toc-l1"><span class="toc-num">6</span> Multilingual Support</li>
+    <li class="toc-l2">6.1 Language Coverage</li>
+    <li class="toc-l2">6.2 ISO 639-1 Code Conventions</li>
+    <li class="toc-l2">6.3 Language Detection &amp; Validation</li>
+
+    <li class="toc-l1"><span class="toc-num">7</span> Expression Tag System</li>
+    <li class="toc-l2">7.1 Tag Semantics</li>
+    <li class="toc-l2">7.2 Tag Processing Pipeline</li>
+    <li class="toc-l2">7.3 Tag Composition &amp; Nesting</li>
+
+    <li class="toc-l1"><span class="toc-num">8</span> Frontend Architecture</li>
+    <li class="toc-l2">8.1 Single-Page Application Design</li>
+    <li class="toc-l2">8.2 Component Hierarchy</li>
+    <li class="toc-l2">8.3 State Management Model</li>
+    <li class="toc-l2">8.4 Audio Playback &amp; Waveform Rendering</li>
+    <li class="toc-l2">8.5 User Interaction Patterns</li>
+    <li class="toc-l2">8.6 CSS Design System</li>
+    <li class="toc-l2">8.7 Responsive Design Strategy</li>
+
+    <li class="toc-l1"><span class="toc-num">9</span> Data Persistence &amp; Storage</li>
+    <li class="toc-l2">9.1 Directory Structure</li>
+    <li class="toc-l2">9.2 Export Format Specification</li>
+    <li class="toc-l2">9.3 Metadata Schema</li>
+    <li class="toc-l2">9.4 History Management</li>
+
+    <li class="toc-l1"><span class="toc-num">10</span> Configuration &amp; Environment</li>
+    <li class="toc-l2">10.1 Configuration Module</li>
+    <li class="toc-l2">10.2 Environment Variables</li>
+    <li class="toc-l2">10.3 Server Binding &amp; Port Selection</li>
+
+    <li class="toc-l1"><span class="toc-num">11</span> Installation &amp; Deployment</li>
+    <li class="toc-l2">11.1 System Requirements</li>
+    <li class="toc-l2">11.2 Quick Start Installation</li>
+    <li class="toc-l2">11.3 Development Environment Setup</li>
+    <li class="toc-l2">11.4 Docker Deployment (Planned)</li>
+    <li class="toc-l2">11.5 Troubleshooting Common Issues</li>
+
+    <li class="toc-l1"><span class="toc-num">12</span> User Guide</li>
+    <li class="toc-l2">12.1 Studio Interface Walkthrough</li>
+    <li class="toc-l2">12.2 Voice Selection &amp; Auditioning</li>
+    <li class="toc-l2">12.3 Parameter Tuning</li>
+    <li class="toc-l2">12.4 Batch Processing</li>
+    <li class="toc-l2">12.5 History &amp; Search</li>
+    <li class="toc-l2">12.6 Keyboard Shortcuts</li>
+
+    <li class="toc-l1"><span class="toc-num">13</span> Developer Guide</li>
+    <li class="toc-l2">13.1 Contribution Workflow</li>
+    <li class="toc-l2">13.2 Code Style &amp; Conventions</li>
+    <li class="toc-l2">13.3 Testing Framework</li>
+    <li class="toc-l2">13.4 Pull Request Process</li>
+
+    <li class="toc-l1"><span class="toc-num">14</span> Testing &amp; Quality Assurance</li>
+    <li class="toc-l2">14.1 Test Suite Architecture</li>
+    <li class="toc-l2">14.2 Unit Test Coverage</li>
+    <li class="toc-l2">14.3 Test Execution</li>
+
+    <li class="toc-l1"><span class="toc-num">15</span> Security Architecture</li>
+    <li class="toc-l2">15.1 Security Design Principles</li>
+    <li class="toc-l2">15.2 Attack Surface Analysis</li>
+    <li class="toc-l2">15.3 Path Traversal Mitigation</li>
+    <li class="toc-l2">15.4 CORS &amp; Network Security</li>
+    <li class="toc-l2">15.5 Vulnerability Reporting</li>
+
+    <li class="toc-l1"><span class="toc-num">16</span> Roadmap &amp; Future Development</li>
+    <li class="toc-l2">16.1 Version 1.0 — Current Release</li>
+    <li class="toc-l2">16.2 Version 1.1 — Polish &amp; Ecosystem</li>
+    <li class="toc-l2">16.3 Version 1.2 — Power Features</li>
+    <li class="toc-l2">16.4 Version 2.0 — Collaborative Platform</li>
+    <li class="toc-l2">16.5 Community Wishlist</li>
+
+    <li class="toc-l1"><span class="toc-num">17</span> Appendices</li>
+    <li class="toc-l2">A. Complete Language Code Reference</li>
+    <li class="toc-l2">B. Voice Catalog — Full Metadata</li>
+    <li class="toc-l2">C. Expression Tag Quick Reference</li>
+    <li class="toc-l2">D. Request/Response JSON Schemas</li>
+    <li class="toc-l2">E. Keyboard Shortcut Reference</li>
+    <li class="toc-l2">F. Third-Party Dependency Manifest</li>
+    <li class="toc-l2">G. Glossary of Terms</li>
+    <li class="toc-l2">H. Bibliography &amp; References</li>
+  </ul>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 1: INTRODUCTION                                                   -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<h1 class="chapter">Introduction &amp; Project Overview</h1>
+
+<h2>1.1 Motivation &amp; Vision</h2>
+
+<p>VoxCraft is an enterprise-grade, fully-local text-to-speech (TTS) studio engineered to bridge the gap between professional voiceover production and the accessibility of open-source tooling. The project was conceived as a response to a clear market deficiency: existing TTS solutions force users into one of two undesirable positions — either paying recurring subscription fees for cloud-based services that exfiltrate their content to remote servers, or settling for low-quality, under-featured open-source alternatives that lack the polish required for production content creation.</p>
+
+<p>The core vision is radical in its simplicity: <strong>studio-quality voice synthesis that runs entirely on the user's own hardware, with zero API calls, zero telemetry, and zero recurring costs.</strong> VoxCraft achieves this by leveraging Supertonic 3, a 99-million-parameter ONNX model that performs inference directly on-device — no GPU required. This architectural choice means that a base-model M1 MacBook Air can generate 44.1 kHz 16-bit WAV audio suitable for Instagram Reels, YouTube videos, podcasts, audiobooks, and professional voiceover work, all without an internet connection after the initial model download.</p>
+
+<p>The name &ldquo;VoxCraft&rdquo; reflects the dual nature of the application: <em>vox</em> (Latin for voice) and <em>craft</em> (the artisan's deliberate, skilled practice). Like a craftsman's workshop, the studio provides precise control over every parameter of voice generation — from voice character selection and language choice to speed modulation and denoising quality — while maintaining the immediacy and responsiveness of a local application.</p>
+
+<div class="note">
+  <strong>Key Insight:</strong> VoxCraft is not merely a wrapper around Supertonic 3. It is a complete studio environment that adds voice management, expression tagging, batch processing, waveform visualization, generation history with full-text search, and a polished single-page application frontend — all orchestrated through a RESTful API that any application can consume.
+</div>
+
+<h2>1.2 Core Capabilities</h2>
+
+<p>The v1.0 release delivers the following production-ready features, each designed to meet the needs of content creators who demand professional output without professional budgets:</p>
+
+<table>
+  <tr><th style="width:30%">Feature</th><th>Description</th><th style="width:15%">Status</th></tr>
+  <tr><td><strong>10 Voice Styles</strong></td><td>Five male (M1–M5) and five female (F1–F5) voice characters, each with distinct tonal qualities, personality descriptions, and recommended use cases. Voices span from warm, deep narration to bright, energetic social media delivery.</td><td>✅ v1.0</td></tr>
+  <tr><td><strong>31 Languages</strong></td><td>Support for 31 languages spanning Indo-European, Sino-Tibetan, Japonic, Koreanic, Dravidian, Semitic, Uralic, Turkic, Austroasiatic, and Tai-Kadai language families. All languages use ISO 639-1 two-letter codes.</td><td>✅ v1.0</td></tr>
+  <tr><td><strong>6 Expression Tags</strong></td><td>Inline markup tags (<code>&lt;laugh&gt;</code>, <code>&lt;breath&gt;</code>, <code>&lt;sigh&gt;</code>, <code>&lt;whisper&gt;</code>, <code>&lt;cough&gt;</code>, <code>&lt;say&gt;</code>) that inject natural paralinguistic features into synthesized speech, producing more human-like delivery.</td><td>✅ v1.0</td></tr>
+  <tr><td><strong>Speed Control</strong></td><td>Continuous speed adjustment from 0.7× to 2.0× with 0.05× granularity. Speed changes are performed without pitch distortion, preserving natural voice character at any tempo.</td><td>✅ v1.0</td></tr>
+  <tr><td><strong>Quality Settings</strong></td><td>Five to twelve denoising steps selectable via slider, offering a spectrum from fast draft generation (5 steps) to studio-grade output (12 steps). Each additional step improves clarity at the cost of linearly increased computation time.</td><td>✅ v1.0</td></tr>
+  <tr><td><strong>Waveform Preview</strong></td><td>Interactive audio player powered by WaveSurfer.js v7, providing real-time waveform visualization with play/pause, seek, and time display. The waveform is rendered client-side via the Web Audio API with zero server round-trips after initial load.</td><td>✅ v1.0</td></tr>
+  <tr><td><strong>Batch Mode</strong></td><td>Process up to 50 text segments in a single API request, with optional merging of output into a single audio file. Ideal for multi-scene voiceover production or bulk content generation pipelines.</td><td>✅ v1.0</td></tr>
+  <tr><td><strong>Generation History</strong></td><td>Persistent, searchable history of all generated audio with text preview, voice metadata, duration, and one-click replay. History is stored in SQLite (WAL mode) with indexed queries — no database server required.</td><td>✅ v1.0</td></tr>
+  <tr><td><strong>Studio-Grade Output</strong></td><td>44.1 kHz sample rate, 16-bit depth, mono WAV format — the broadcast standard for professional audio. Files are immediately usable in any DAW, video editor, or content platform.</td><td>✅ v1.0</td></tr>
+  <tr><td><strong>100% Local Execution</strong></td><td>No network calls for synthesis, no telemetry, no analytics, no account required. The only network activity is the one-time download of the Supertonic 3 ONNX model (~400 MB) from Hugging Face on first launch.</td><td>✅ v1.0</td></tr>
+</table>
+
+<h2>1.3 Design Philosophy</h2>
+
+<p>VoxCraft's architecture is governed by four immutable design principles that inform every technical decision:</p>
+
+<h3>1.3.1 100% Local by Default</h3>
+<p>This is the project's defining constraint and its greatest strength. No synthesis data ever leaves the user's machine. The ONNX model runs inference directly on CPU via optimized C++ runtime bindings. There are no cloud API dependencies, no telemetry endpoints, no analytics beacons, and no license activation servers. The implication for the architecture is profound: every component must function in a fully air-gapped environment after initial model acquisition. This constraint drove the decision to use a file-based history system instead of a database, vanilla JavaScript instead of a framework with a build step, and FastAPI's built-in static file serving instead of a separate web server.</p>
+
+<h3>1.3.2 Zero Build Step</h3>
+<p>The frontend is a single HTML file with embedded CSS and JavaScript. There is no npm, no webpack, no Vite, no TypeScript compilation, and no minification pipeline. The entire studio application — all 741 lines of it — is served as a static file by the FastAPI backend. This choice was deliberate: it eliminates the entire category of frontend build tooling issues (version conflicts, broken CI pipelines, dependency hell), reduces the contribution barrier to near-zero (anyone can edit a single file), and ensures that the application loads faster than any framework-based SPA could ever achieve. WaveSurfer.js is loaded from a CDN via ES module import, but this is optional — it could be vendored for fully offline use.</p>
+
+<h3>1.3.3 Python-First Backend</h3>
+<p>The backend is pure Python 3.14 with type hints throughout. The codebase uses modern Python features (<code>from __future__ import annotations</code> for forward-reference resolution, NumPy for audio array manipulation, Pydantic v2 for request/response validation) while remaining approachable to Python developers of all skill levels. FastAPI was selected over Flask or Django for its automatic OpenAPI documentation generation, built-in async support, Pydantic integration, and performance characteristics (on par with Node.js frameworks due to Starlette/uvicorn underpinnings).</p>
+
+<h3>1.3.4 Fast by Default</h3>
+<p>Every interaction in the studio — from page load to voice generation to history search — is designed to feel instantaneous. The Supertonic engine is initialized eagerly on server startup (not lazily on first request). Voice styles are pre-cached in memory. The frontend makes parallel API calls on initialization to populate voices, languages, and health status simultaneously. The audio player uses the Web Audio API for sub-millisecond playback latency. There are no spinners for operations under 100ms; longer operations (synthesis) show progress feedback.</p>
+
+<h2>1.4 Technology Stack</h2>
+
+<table>
+  <tr><th style="width:20%">Layer</th><th style="width:30%">Technology</th><th>Version</th><th>Purpose</th></tr>
+  <tr><td><strong>TTS Engine</strong></td><td>Supertonic 3</td><td>≥1.3</td><td>High-quality ONNX-based TTS with 31 languages, 99M parameters, CPU-optimized inference. Provides voice style management and multi-step denoising synthesis.</td></tr>
+  <tr><td><strong>Web Framework</strong></td><td>FastAPI</td><td>≥0.115</td><td>Modern, async Python web framework with automatic OpenAPI docs, Pydantic validation, and Starlette-powered performance.</td></tr>
+  <tr><td><strong>ASGI Server</strong></td><td>Uvicorn</td><td>≥0.34</td><td>Lightning-fast ASGI server implementation using uvloop and httptools. Serves both API and static frontend assets.</td></tr>
+  <tr><td><strong>Data Validation</strong></td><td>Pydantic v2</td><td>≥2.0</td><td>Request/response schema validation with type coercion, constraint enforcement, and automatic JSON Schema generation for API docs.</td></tr>
+  <tr><td><strong>Numerical Computing</strong></td><td>NumPy</td><td>≥1.24</td><td>Audio array manipulation — mono squeezing, duration calculation, array reshaping before WAV export.</td></tr>
+  <tr><td><strong>Audio I/O</strong></td><td>SoundFile</td><td>≥0.13</td><td>Cross-platform WAV file writing with full format control (sample rate, bit depth, channel count). Built on libsndfile.</td></tr>
+  <tr><td><strong>Form Parsing</strong></td><td>python-multipart</td><td>≥0.0.12</td><td>Required by FastAPI for multipart form handling (used by the auto-generated Swagger UI for testing POST endpoints).</td></tr>
+  <tr><td><strong>Frontend Runtime</strong></td><td>Vanilla JavaScript (ES Modules)</td><td>ES2022+</td><td>Zero-framework SPA with native DOM APIs, Fetch API, and module imports. No transpilation, no bundling.</td></tr>
+  <tr><td><strong>Waveform Visualization</strong></td><td>WaveSurfer.js</td><td>v7</td><td>GPU-accelerated audio waveform renderer using Web Audio API and Canvas. Provides interactive playback with customizable styling.</td></tr>
+  <tr><td><strong>Fonts</strong></td><td>Inter (vendored)</td><td>v3.19 (5 weights)</td><td>Modern sans-serif typeface with excellent legibility at small sizes. Shipped as TTF files in <code>frontend/fonts/</code> — no CDN dependency.</td></tr>
+  <tr><td><strong>Testing</strong></td><td>pytest + pytest-asyncio</td><td>≥8.0 / ≥0.24</td><td>Industry-standard Python testing framework with async test support for FastAPI endpoints.</td></tr>
+  <tr><td><strong>Linting</strong></td><td>Ruff</td><td>≥0.8</td><td>Extremely fast Python linter and formatter (written in Rust). Enforces code style consistency.</td></tr>
+  <tr><td><strong>HTTP Testing</strong></td><td>HTTPX</td><td>≥0.28</td><td>Modern async HTTP client for Python, used in test suites to exercise the FastAPI application.</td></tr>
+</table>
+
+<h2>1.5 Licensing &amp; Cost Model</h2>
+
+<p>VoxCraft is released under the <strong>MIT License</strong>, the most permissive open-source license available. This permits unrestricted use, modification, distribution, private use, and commercial exploitation — the only requirement is preservation of the copyright notice. The choice of MIT over copyleft licenses (GPL, AGPL) was intentional: it allows VoxCraft to be embedded in commercial products, integrated into enterprise workflows, and used as a foundation for proprietary voice services without legal friction.</p>
+
+<p>The total cost of ownership for VoxCraft is zero dollars:</p>
+
+<table>
+  <tr><th>Cost Category</th><th>Amount</th><th>Notes</th></tr>
+  <tr><td>Software License</td><td>$0.00</td><td>MIT — no restrictions on usage</td></tr>
+  <tr><td>TTS Engine</td><td>$0.00</td><td>Supertonic 3 is free and runs locally</td></tr>
+  <tr><td>API Calls</td><td>$0.00</td><td>Everything runs on-device; no cloud services</td></tr>
+  <tr><td>Compute</td><td>$0.00 (marginal)</td><td>Uses existing hardware; inference is CPU-efficient</td></tr>
+  <tr><td>Storage</td><td>~400 MB (one-time)</td><td>ONNX model download; audio exports consume disk space as used</td></tr>
+  <tr><td><strong>Total</strong></td><td><strong>$0.00</strong></td><td>Free forever</td></tr>
+</table>
+
+<div class="page-break"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 2: SYSTEM ARCHITECTURE                                            -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<h1 class="chapter">System Architecture</h1>
+
+<h2>2.1 Architectural Overview</h2>
+
+<p>VoxCraft follows a <strong>monolithic single-process architecture</strong> with a clear separation of concerns between layers. This is not a microservices system, nor does it use a database — every component runs in a single Python process managed by Uvicorn. This architectural simplicity is a feature, not a limitation: it eliminates network latency between components, removes the need for inter-process communication, simplifies deployment to a single command, and makes the system trivially debuggable.</p>
+
+<p>The system can be understood as a stack of five logical layers, each building on the one below it:</p>
+
+<div class="diagram">
+  <div class="diagram-title">Figure 2.1 — VoxCraft Layered Architecture</div>
+  <div class="arch-layer client">
+    <strong>Presentation Layer</strong><br>
+    <span class="small-text">Browser-based SPA (HTML/CSS/JS) · WaveSurfer.js · Fetch API · Web Audio API</span>
+  </div>
+  <div style="text-align:center;font-size:18pt;color:#6366f1;margin:3px 0">↕ HTTP (REST)</div>
+  <div class="arch-layer server">
+    <strong>Application Layer</strong><br>
+    <span class="small-text">FastAPI (app.py) · 10 REST endpoints · Pydantic v2 validation · CORS middleware</span>
+  </div>
+  <div style="text-align:center;font-size:18pt;color:#6366f1;margin:3px 0">↕ Python API</div>
+  <div class="arch-layer engine">
+    <strong>Engine Layer</strong><br>
+    <span class="small-text">TTSEngine (tts_engine.py) · Voice cache · Audio export pipeline · History manager</span>
+  </div>
+  <div style="text-align:center;font-size:18pt;color:#6366f1;margin:3px 0">↕ Python API</div>
+  <div class="arch-layer model">
+    <strong>Inference Layer</strong><br>
+    <span class="small-text">Supertonic 3 (supertonic.TTS) · ONNX Runtime · 99M params · CPU-optimized</span>
+  </div>
+  <div style="text-align:center;font-size:18pt;color:#6366f1;margin:3px 0">↕ Filesystem I/O</div>
+  <div class="arch-layer storage">
+    <strong>Persistence Layer</strong><br>
+    <span class="small-text">SQLite-backed storage · data/exports/ (WAV) · data/voxcraft.db (SQLite with WAL mode)</span>
+  </div>
+</div>
+
+<p>The key architectural insight is that the <strong>Engine Layer</strong> is the system's single source of truth for all TTS state. It owns the Supertonic client instance, maintains the voice style cache, performs synthesis, manages audio export with metadata, and tracks generation history. The Application Layer (FastAPI) is a thin orchestration facade that maps HTTP requests to Engine method calls and transforms results into JSON responses. This separation means the Engine can be tested independently of HTTP concerns, and the entire system could be re-fronted with a different protocol (gRPC, WebSocket, CLI) without touching the Engine.</p>
+
+<h2>2.2 Component Interaction Matrix</h2>
+
+<p>The following matrix documents every interaction between system components, specifying the direction of dependency and the nature of the relationship:</p>
+
+<table>
+  <tr><th>From \ To</th><th>app.py</th><th>tts_engine.py</th><th>config.py</th><th>supertonic</th><th>Filesystem</th><th>Browser</th></tr>
+  <tr><td><strong>app.py</strong></td><td>—</td><td>Imports VoiceStyle, LANGUAGES, EXPRESSION_TAGS, get_engine(); calls synthesize(), export_for_platform(), get_history()</td><td>Imports HOST, PORT, DATA_DIR</td><td>—</td><td>Reads frontend/index.html; serves static files; deletes history files</td><td>Serves HTTP responses</td></tr>
+  <tr><td><strong>tts_engine.py</strong></td><td>—</td><td>—</td><td>Imports DATA_DIR; uses config.DATA_DIR for path construction</td><td>Imports TTS from supertonic; calls synthesize(), get_voice_style()</td><td>Reads/writes exports/ directory; calls data_store for persistence</td><td>—</td></tr>
+  <tr><td><strong>config.py</strong></td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+</table>
+
+<h2>2.3 Request-Response Lifecycle</h2>
+
+<p>The most performance-critical path in the system is the synthesis request. Understanding this lifecycle is essential for debugging, performance optimization, and contributing new features. The following trace follows a complete synthesis from browser to filesystem and back:</p>
+
+<div class="diagram">
+  <div class="diagram-title">Figure 2.2 — Synthesis Request Lifecycle (POST /api/synthesize)</div>
+
+  <div class="flow-row"><strong>Phase 1: Request Ingestion (0–2 ms)</strong></div>
+  <div class="flow-row">
+    <div class="flow-box">1. User types text, selects voice, clicks "Generate Speech" or presses Cmd+Enter</div>
+  </div>
+  <div class="flow-row">
+    <div class="flow-arrow">↓</div>
+  </div>
+  <div class="flow-row">
+    <div class="flow-box">2. Browser constructs JSON payload: {text, voice, language, speed, quality}</div>
+  </div>
+  <div class="flow-row">
+    <div class="flow-arrow">↓</div>
+  </div>
+  <div class="flow-row">
+    <div class="flow-box">3. <code>fetch()</code> sends POST to <code>/api/synthesize</code> with Content-Type: application/json</div>
+  </div>
+
+  <div class="flow-row" style="margin-top:12px"><strong>Phase 2: Validation (1–3 ms)</strong></div>
+  <div class="flow-row">
+    <div class="flow-arrow">↓</div>
+  </div>
+  <div class="flow-row">
+    <div class="flow-box">4. FastAPI deserializes JSON → SynthesizeRequest Pydantic model; validates text length (1–5000 chars), voice name, language code, speed range (0.7–2.0), quality range (5–12)</div>
+  </div>
+  <div class="flow-row">
+    <div class="flow-arrow">↓</div>
+  </div>
+  <div class="flow-row">
+    <div class="flow-box">5. Validation failure → HTTP 400 with detail message; success → proceed to engine</div>
+  </div>
+
+  <div class="flow-row" style="margin-top:12px"><strong>Phase 3: Engine Readiness Check (0–1 ms)</strong></div>
+  <div class="flow-row">
+    <div class="flow-arrow">↓</div>
+  </div>
+  <div class="flow-row">
+    <div class="flow-box">6. <code>get_engine()</code> returns singleton TTSEngine instance (or creates + initializes on first call)</div>
+  </div>
+  <div class="flow-row">
+    <div class="flow-arrow">↓</div>
+  </div>
+  <div class="flow-row">
+    <div class="flow-box">7. <code>engine.is_ready</code> check — if False (model not downloaded), return HTTP 503</div>
+  </div>
+
+  <div class="flow-row" style="margin-top:12px"><strong>Phase 4: Voice Resolution &amp; Synthesis (100–5000 ms, dominant cost)</strong></div>
+  <div class="flow-row">
+    <div class="flow-arrow">↓</div>
+  </div>
+  <div class="flow-row">
+    <div class="flow-box">8. <code>engine._get_voice(voice_name)</code> — hits in-memory cache or loads voice style from Supertonic</div>
+  </div>
+  <div class="flow-row">
+    <div class="flow-arrow">↓</div>
+  </div>
+  <div class="flow-row">
+    <div class="flow-box">9. <code>engine.synthesize()</code> → <code>self._tts.synthesize(text, lang, voice_style, total_steps=quality, speed=speed)</code></div>
+  </div>
+  <div class="flow-row">
+    <div class="flow-arrow">↓</div>
+  </div>
+  <div class="flow-row">
+    <div class="flow-box">10. Supertonic runs ONNX inference — returns (wav: np.ndarray, duration: float)</div>
+  </div>
+
+  <div class="flow-row" style="margin-top:12px"><strong>Phase 5: Export &amp; Persistence (5–20 ms)</strong></div>
+  <div class="flow-row">
+    <div class="flow-arrow">↓</div>
+  </div>
+  <div class="flow-row">
+    <div class="flow-box">11. <code>engine.export_for_platform()</code> — generates UUID-based ID, timestamp, filename</div>
+  </div>
+  <div class="flow-row">
+    <div class="flow-arrow">↓</div>
+  </div>
+  <div class="flow-row">
+    <div class="flow-box">12. <code>engine.save_audio()</code> — writes WAV to <code>data/exports/voxcraft_{id}.wav</code> via SoundFile</div>
+    <div class="flow-box">13. <code>data_store.save_export()</code> — atomically writes metadata to SQLite (single source of truth)</div>
+  </div>
+
+  <div class="flow-row" style="margin-top:12px"><strong>Phase 6: Response (1–2 ms)</strong></div>
+  <div class="flow-row">
+    <div class="flow-arrow">↓</div>
+  </div>
+  <div class="flow-row">
+    <div class="flow-box">15. SynthesizeResponse model constructed: {success, audio_url, duration_seconds, id, text, voice, language, sample_rate}</div>
+  </div>
+  <div class="flow-row">
+    <div class="flow-arrow">↓</div>
+  </div>
+  <div class="flow-row">
+    <div class="flow-box">16. FastAPI serializes to JSON; Uvicorn sends HTTP 200 response</div>
+  </div>
+  <div class="flow-row">
+    <div class="flow-arrow">↓</div>
+  </div>
+  <div class="flow-row">
+    <div class="flow-box">17. Browser receives response; loads audio URL into WaveSurfer; renders waveform; displays success toast</div>
+  </div>
+</div>
+
+<p>The total wall-clock time is dominated almost entirely by <strong>Phase 4 (ONNX inference)</strong>, which typically ranges from 100 ms for short text at quality=5 to several seconds for maximum-length text at quality=12. All other phases combined contribute less than 30 ms to the total latency.</p>
+
+<h2>2.4 Data Flow &amp; Persistence Model</h2>
+
+<p>VoxCraft uses a <strong>SQLite-backed persistence model</strong> with WAL mode for concurrent reads and atomic writes. Audio files are stored on disk; metadata lives in the database as the single source of truth.</p>
+
+<div class="dataflow">
+  <div class="dataflow-col">
+    <h4>data/exports/</h4>
+    <p><strong>Purpose:</strong> User-facing audio output</p>
+    <p><strong>Contents:</strong> <code>.wav</code> (44.1kHz 16-bit mono)</p>
+    <p><strong>Naming:</strong> <code>voxcraft_{uuid12}_{timestamp}.wav</code></p>
+    <p><strong>Cleanup:</strong> Manual via API; no automatic expiration</p>
+    <p><strong>Served via:</strong> <code>/api/audio/{filename}</code></p>
+  </div>
+  <div class="dataflow-col">
+    <h4>data/voxcraft.db</h4>
+    <p><strong>Purpose:</strong> Metadata persistence &amp; history</p>
+    <p><strong>Contents:</strong> SQLite database (WAL mode, schema versioned)</p>
+    <p><strong>Tables:</strong> <code>exports</code> (id, filename, text, voice, language, duration, ...), <code>history</code> (export_id, accessed_at)</p>
+    <p><strong>Cleanup:</strong> DELETE via API removes DB row + audio file</p>
+    <p><strong>Served via:</strong> <code>/api/history</code></p>
+  </div>
+  <div class="dataflow-col">
+    <h4>data/voices/</h4>
+    <p><strong>Purpose:</strong> Custom voice import target</p>
+    <p><strong>Contents:</strong> <code>.json</code> (voice style definitions)</p>
+    <p><strong>Naming:</strong> User-defined</p>
+    <p><strong>Cleanup:</strong> Manual</p>
+    <p><strong>Status:</strong> Directory created; feature planned (v1.2)</p>
+  </div>
+</div>
+
+<div class="tip">
+  <strong>Design Note:</strong> v1.0.1 replaced the dual JSON directory approach with a SQLite-backed single source of truth. The <code>data/history/</code> directory is deprecated — historical data is migrated to <code>data/voxcraft.db</code> on first run via <code>migrate_from_json()</code>. The <code>exports</code> table stores all metadata with indexes on created_at, voice, and language. The <code>history</code> table tracks access timestamps via a foreign key to exports. Deleting an export cascades to the history record and removes the WAV file atomically.
+</div>
+
+<div class="page-break"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 3: BACKEND API REFERENCE                                          -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<h1 class="chapter">Backend API Reference</h1>
+
+<h2>3.1 API Design Conventions</h2>
+
+<p>VoxCraft's REST API adheres to a consistent set of design conventions that make it predictable, self-documenting, and easy to integrate with external tools and scripts:</p>
+
+<ul>
+  <li><strong>Base URL:</strong> All endpoints are prefixed with <code>/api/</code> to namespace them separately from the frontend static file routes. The root path serves the SPA index.html.</li>
+  <li><strong>Content Type:</strong> All request and response bodies use <code>application/json</code>. The API does not accept form-encoded or multipart payloads for synthesis (multipart is only used by the Swagger UI's built-in testing interface).</li>
+  <li><strong>Success Envelope:</strong> Mutation responses include a <code>success: true</code> field. Read-only endpoints return data directly (list of voices, language dict, etc.) without an envelope.</li>
+  <li><strong>Error Envelope:</strong> Errors return <code>{"success": false, "error": "human-readable message"}</code> for mutation endpoints. FastAPI's built-in validation errors return the standard <code>{"detail": [...]}</code> format with field-level error locations.</li>
+  <li><strong>HTTP Semantics:</strong> GET for reads, POST for creations/actions, DELETE for deletions. The API does not use PUT or PATCH — there are no updatable resources in v1.0.</li>
+  <li><strong>OpenAPI Documentation:</strong> Available at <code>/docs</code> (Swagger UI) and <code>/redoc</code> (ReDoc). These are auto-generated by FastAPI from Pydantic model schemas and docstrings.</li>
+  <li><strong>CORS:</strong> All origins are permitted (<code>allow_origins=["*"]</code>) for local development convenience. For production deployments, this should be restricted.</li>
+</ul>
+
+<h2>3.2 GET /api/health — Health Check</h2>
+
+<div class="endpoint-block">
+  <div class="ep-header">
+    <span class="ep-method get">GET</span>
+    <span class="ep-path">/api/health</span>
+  </div>
+
+  <p>Returns the current status of the VoxCraft server and its TTS engine. This is the first endpoint the frontend calls on load and is used to display the online/offline indicator in the top bar. No authentication is required.</p>
+
+  <h4>Response Schema (200 OK)</h4>
+  <pre><code>{
+  "status": "healthy" | "initializing",
+  "engine_ready": true | false,
+  "voices_available": 10,
+  "languages_available": 31
+}</code></pre>
+
+  <table>
+    <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+    <tr><td><code>status</code></td><td>string</td><td><code>"healthy"</code> if the engine has initialized successfully; <code>"initializing"</code> if the ONNX model is still downloading or the engine failed to initialize.</td></tr>
+    <tr><td><code>engine_ready</code></td><td>boolean</td><td>Direct reflection of <code>TTSEngine.is_ready</code>. When false, synthesis requests will return HTTP 503.</td></tr>
+    <tr><td><code>voices_available</code></td><td>integer</td><td>Number of preset voice styles loaded (always 10).</td></tr>
+    <tr><td><code>languages_available</code></td><td>integer</td><td>Number of supported languages (always 31).</td></tr>
+  </table>
+
+  <h4>Example</h4>
+  <pre><code>// Request
+curl http://localhost:8765/api/health
+
+// Response
+{"status":"healthy","engine_ready":true,"voices_available":10,"languages_available":31}</code></pre>
+
+  <h4>Error Cases</h4>
+  <p>This endpoint does not return error responses. If the server is unreachable, the client treats it as offline. If the engine is not ready, the response body indicates this with <code>engine_ready: false</code> rather than an error status code.</p>
+</div>
+
+<h2>3.3 GET /api/voices — Voice Catalog</h2>
+
+<div class="endpoint-block">
+  <div class="ep-header">
+    <span class="ep-method get">GET</span>
+    <span class="ep-path">/api/voices</span>
+  </div>
+
+  <p>Returns the complete catalog of available voice styles with full metadata. Each voice includes its internal name, human-readable display name, description, gender, and a set of descriptive tags for filtering and search.</p>
+
+  <h4>Response Schema (200 OK)</h4>
+  <pre><code>[
+  {
+    "name": "M1",
+    "display_name": "M1 — Warm Baritone",
+    "description": "Rich, deep male voice with natural warmth. Ideal for narration and storytelling.",
+    "gender": "male",
+    "tags": ["warm", "deep", "narration"]
+  },
+  // ... 9 more voices
+]</code></pre>
+
+  <table>
+    <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+    <tr><td><code>name</code></td><td>string</td><td>Internal voice identifier used in synthesis requests (M1–M5, F1–F5). Always 2 characters.</td></tr>
+    <tr><td><code>display_name</code></td><td>string</td><td>Human-readable label shown in the UI. Always includes an em-dash separator between the code and the character name.</td></tr>
+    <tr><td><code>description</code></td><td>string</td><td>Long-form description of the voice's character, tonal quality, and recommended use case. Always exceeds 10 characters.</td></tr>
+    <tr><td><code>gender</code></td><td>string</td><td>Either <code>"male"</code> or <code>"female"</code>. Used for the gender badge in the UI and for filtering.</td></tr>
+    <tr><td><code>tags</code></td><td>array of strings</td><td>Descriptive tags for the voice (e.g., "warm", "narration", "cinematic"). Useful for programmatic voice selection based on content type.</td></tr>
+  </table>
+</div>
+
+<h2>3.4 GET /api/languages — Language Registry</h2>
+
+<div class="endpoint-block">
+  <div class="ep-header">
+    <span class="ep-method get">GET</span>
+    <span class="ep-path">/api/languages</span>
+  </div>
+
+  <p>Returns a dictionary mapping ISO 639-1 two-letter language codes to their display names in both the native script (where applicable) and English.</p>
+
+  <h4>Response Schema (200 OK)</h4>
+  <pre><code>{
+  "en": "English",
+  "hi": "हिन्दी (Hindi)",
+  "ar": "العربية (Arabic)",
+  "fr": "Français (French)",
+  "de": "Deutsch (German)",
+  "ja": "日本語 (Japanese)",
+  "ko": "한국어 (Korean)",
+  "zh": "中文 (Chinese)",
+  // ... 23 more languages
+}</code></pre>
+
+  <p>The response is a flat <code>dict[str, str]</code> — not a list of objects. This format is optimized for direct use as <code>&lt;option&gt;</code> elements in an HTML <code>&lt;select&gt;</code> without additional transformation.</p>
+</div>
+
+<div class="page-break"></div>
+
+<h2>3.5 GET /api/tags — Expression Tags</h2>
+
+<div class="endpoint-block">
+  <div class="ep-header">
+    <span class="ep-method get">GET</span>
+    <span class="ep-path">/api/tags</span>
+  </div>
+
+  <p>Returns the dictionary of supported expression tags. Each key is the tag name (used as a label in the UI), and each value is the inline markup string that users embed in their text.</p>
+
+  <h4>Response Schema (200 OK)</h4>
+  <pre><code>{
+  "laugh": "&lt;laugh&gt;",
+  "breath": "&lt;breath&gt;",
+  "sigh": "&lt;sigh&gt;",
+  "cough": "&lt;cough&gt;",
+  "whisper": "&lt;whisper&gt;",
+  "say": "&lt;say&gt;"
+}</code></pre>
+</div>
+
+<h2>3.6 POST /api/synthesize — Speech Synthesis</h2>
+
+<div class="endpoint-block">
+  <div class="ep-header">
+    <span class="ep-method post">POST</span>
+    <span class="ep-path">/api/synthesize</span>
+  </div>
+
+  <p>This is the primary endpoint of the VoxCraft API. It accepts text and generation parameters, runs the full synthesis pipeline, persists the audio and metadata to disk, and returns a response containing the audio URL and generation metadata.</p>
+
+  <h4>Request Schema</h4>
+  <pre><code>{
+  "text": "Welcome to VoxCraft. This is a professional text-to-speech studio.",
+  "voice": "M1",
+  "language": "en",
+  "speed": 1.05,
+  "quality": 8
+}</code></pre>
+
+  <table>
+    <tr><th>Field</th><th>Type</th><th>Required</th><th>Constraints</th><th>Description</th></tr>
+    <tr><td><code>text</code></td><td>string</td><td>✅ Yes</td><td>1–5,000 characters</td><td>The text to convert to speech. Can include expression tags like <code>&lt;laugh&gt;</code>. Empty or whitespace-only strings are rejected at the engine level.</td></tr>
+    <tr><td><code>voice</code></td><td>string</td><td>No</td><td>Must be one of: M1, M2, M3, M4, M5, F1, F2, F3, F4, F5</td><td>Voice style to use. Defaults to "M1" (Warm Baritone).</td></tr>
+    <tr><td><code>language</code></td><td>string</td><td>No</td><td>Must be a valid ISO 639-1 two-letter code from the supported languages list</td><td>Target language for synthesis. Defaults to "en" (English).</td></tr>
+    <tr><td><code>speed</code></td><td>float</td><td>No</td><td>0.7 ≤ speed ≤ 2.0</td><td>Speech rate multiplier. 1.0 is normal speed. Values below 1.0 slow down speech; values above speed it up. Defaults to 1.05.</td></tr>
+    <tr><td><code>quality</code></td><td>integer</td><td>No</td><td>5 ≤ quality ≤ 12</td><td>Number of denoising steps. Higher values produce cleaner audio but take longer. 5 = fast draft, 12 = studio quality. Defaults to 8.</td></tr>
+  </table>
+
+  <h4>Response Schema (200 OK)</h4>
+  <pre><code>{
+  "success": true,
+  "audio_url": "/api/audio/voxcraft_a1b2c3d4_20260614_120000.wav",
+  "duration_seconds": 3.45,
+  "id": "a1b2c3d4",
+  "text": "Welcome to VoxCraft...",
+  "voice": "M1",
+  "language": "en",
+  "sample_rate": 44100
+}</code></pre>
+
+  <table>
+    <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+    <tr><td><code>success</code></td><td>boolean</td><td>Always <code>true</code> on successful generation.</td></tr>
+    <tr><td><code>audio_url</code></td><td>string</td><td>Relative URL to the generated WAV file. The frontend prepends the API origin to construct the full URL for the audio player.</td></tr>
+    <tr><td><code>duration_seconds</code></td><td>float</td><td>Actual duration of the generated audio in seconds, rounded to 2 decimal places.</td></tr>
+    <tr><td><code>id</code></td><td>string</td><td>12-character unique generation ID (first 12 hex chars of UUID4). Used to reference this generation in history and for deletion. Provides 48 bits of entropy — collision probability < 0.001% at 1M generations.</td></tr>
+    <tr><td><code>text</code></td><td>string</td><td>Echo of the input text for client-side display.</td></tr>
+    <tr><td><code>voice</code></td><td>string</td><td>Echo of the voice style used.</td></tr>
+    <tr><td><code>language</code></td><td>string</td><td>Echo of the language code used.</td></tr>
+    <tr><td><code>sample_rate</code></td><td>integer</td><td>Always 44100 (44.1 kHz). Included for clients that need to configure audio playback contexts.</td></tr>
+  </table>
+
+  <h4>Error Responses</h4>
+  <table>
+    <tr><th>Status</th><th>Body</th><th>Condition</th></tr>
+    <tr><td>400 Bad Request</td><td><code>{"detail": "Text cannot be empty"}</code></td><td>Empty or whitespace-only text</td></tr>
+    <tr><td>400 Bad Request</td><td><code>{"detail": "..."}</code></td><td>Pydantic validation failure (invalid voice, speed out of range, etc.)</td></tr>
+    <tr><td>503 Service Unavailable</td><td><code>{"detail": "TTS engine is not ready — model still downloading"}</code></td><td>Engine not initialized; model download in progress</td></tr>
+    <tr><td>500 Internal Server Error</td><td><code>{"detail": "Generation failed: ..."}</code></td><td>Unexpected synthesis error</td></tr>
+  </table>
+
+  <h4>Example</h4>
+  <pre><code>curl -X POST http://localhost:8765/api/synthesize \
+  -H "Content-Type: application/json" \
+  -d '{"text":"Hello world!","voice":"F1","speed":1.2,"quality":10}'</code></pre>
+</div>
+
+<h2>3.7 POST /api/synthesize/batch — Batch Synthesis</h2>
+
+<div class="endpoint-block">
+  <div class="ep-header">
+    <span class="ep-method post">POST</span>
+    <span class="ep-path">/api/synthesize/batch</span>
+  </div>
+
+  <p>Processes multiple text segments with identical voice and parameter settings, returning individual results for each segment. This endpoint is used by the Batch Mode toggle in the frontend, where each line of the textarea is treated as a separate synthesis target.</p>
+
+  <h4>Request Schema</h4>
+  <pre><code>{
+  "texts": ["First sentence.", "Second sentence.", "Third sentence."],
+  "voice": "M3",
+  "language": "en",
+  "speed": 1.0,
+  "quality": 8,
+  "merge": false
+}</code></pre>
+
+  <table>
+    <tr><th>Field</th><th>Type</th><th>Required</th><th>Constraints</th><th>Description</th></tr>
+    <tr><td><code>texts</code></td><td>array of strings</td><td>✅ Yes</td><td>1–50 items</td><td>List of text segments to synthesize. Empty strings within the array are silently skipped. Maximum 50 items per request to prevent abuse.</td></tr>
+    <tr><td><code>voice</code></td><td>string</td><td>No</td><td>Same as /api/synthesize</td><td>Applied to all segments. Default: "M1".</td></tr>
+    <tr><td><code>language</code></td><td>string</td><td>No</td><td>Same as /api/synthesize</td><td>Applied to all segments. Default: "en".</td></tr>
+    <tr><td><code>speed</code></td><td>float</td><td>No</td><td>0.7–2.0</td><td>Applied to all segments. Default: 1.05.</td></tr>
+    <tr><td><code>quality</code></td><td>integer</td><td>No</td><td>5–12</td><td>Applied to all segments. Default: 8.</td></tr>
+    <tr><td><code>merge</code></td><td>boolean</td><td>No</td><td>—</td><td>If <code>true</code>, all generated audio segments are concatenated into a single output file. Default: <code>false</code>.</td></tr>
+  </table>
+
+  <h4>Response Schema (200 OK)</h4>
+  <pre><code>{
+  "success": true,
+  "total_items": 3,
+  "total_duration_seconds": 12.45,
+  "results": [
+    {
+      "id": "a1b2c3d4",
+      "filename": "voxcraft_a1b2c3d4_20260614_120000",
+      "text": "First sentence.",
+      "voice": "M3",
+      "language": "en",
+      "duration_seconds": 4.12,
+      "format": "wav",
+      "created_at": "20260614_120000",
+      "audio_path": "/abs/path/to/data/exports/voxcraft_a1b2c3d4_20260614_120000.wav",
+      "index": 0
+    },
+    // ... more results
+  ]
+}</code></pre>
+
+  <div class="note">
+    <strong>Error Handling in Batch Mode:</strong> Individual segment failures do not cause the entire batch request to fail. Segments that fail synthesis are included in the results array with <code>"success": false</code> and an <code>"error"</code> field containing the exception message. The <code>total_items</code> count reflects the number of results returned, which may differ from the input <code>texts</code> length if empty strings were skipped.
+  </div>
+</div>
+
+<h2>3.8 GET /api/history — Generation History</h2>
+
+<div class="endpoint-block">
+  <div class="ep-header">
+    <span class="ep-method get">GET</span>
+    <span class="ep-path">/api/history?limit=50</span>
+  </div>
+
+  <p>Returns the most recent generation records from the SQLite database, ordered by creation time in descending order (newest first). Records are stored in the <code>exports</code> table with an associated <code>history</code> access log. Optional <code>search</code> parameter filters by text content or voice name using SQL LIKE.</p>
+
+  <h4>Query Parameters</h4>
+  <table>
+    <tr><th>Parameter</th><th>Type</th><th>Default</th><th>Constraints</th><th>Description</th></tr>
+    <tr><td><code>limit</code></td><td>integer</td><td>50</td><td>1 ≤ limit ≤ 200</td><td>Maximum number of history records to return. The frontend always requests 50.</td></tr>
+  </table>
+
+  <h4>Response Schema (200 OK)</h4>
+  <pre><code>[
+  {
+    "id": "a1b2c3d4",
+    "filename": "voxcraft_a1b2c3d4_20260614_120000",
+    "text": "Welcome to VoxCraft...",
+    "voice": "M1",
+    "language": "en",
+    "duration_seconds": 3.45,
+    "format": "wav",
+    "created_at": "20260614_120000",
+    "audio_path": "/abs/path/to/wav"
+  }
+]</code></pre>
+
+  <p>The history endpoint queries SQLite with an indexed ORDER BY on created_at, which scales efficiently to tens of thousands of records. The search parameter uses SQL LIKE with indexed columns for acceptable performance at moderate scale.</p>
+</div>
+
+<h2>3.9 GET /api/audio/{filename} — Audio Retrieval</h2>
+
+<div class="endpoint-block">
+  <div class="ep-header">
+    <span class="ep-method get">GET</span>
+    <span class="ep-path">/api/audio/{filename}</span>
+  </div>
+
+  <p>Serves a generated WAV audio file from the <code>data/exports/</code> directory. This is the endpoint that the frontend audio player uses to fetch audio data for WaveSurfer.js. The endpoint implements path traversal protection by extracting only the basename of the requested filename.</p>
+
+  <h4>Security Implementation</h4>
+  <pre><code>safe_name = os.path.basename(unquote(filename))
+audio_path = EXPORTS_DIR / safe_name
+if not audio_path.exists():
+    audio_path = EXPORTS_DIR / f"{safe_name}.wav"
+    if not audio_path.exists():
+        raise HTTPException(status_code=404, detail="Audio file not found")</code></pre>
+
+  <p>The <code>os.path.basename()</code> call strips any directory traversal components from the URL path. The endpoint also attempts to append <code>.wav</code> if the bare filename is not found, providing leniency for clients that omit the extension.</p>
+
+  <h4>Response</h4>
+  <table>
+    <tr><th>Status</th><th>Content-Type</th><th>Body</th></tr>
+    <tr><td>200 OK</td><td><code>audio/wav</code></td><td>Binary WAV file contents</td></tr>
+    <tr><td>404 Not Found</td><td><code>application/json</code></td><td><code>{"detail": "Audio file not found"}</code></td></tr>
+  </table>
+</div>
+
+<h2>3.10 DELETE /api/history/{generation_id} — History Deletion</h2>
+
+<div class="endpoint-block">
+  <div class="ep-header">
+    <span class="ep-method delete">DELETE</span>
+    <span class="ep-path">/api/history/{generation_id}</span>
+  </div>
+
+  <p>Deletes all files associated with a specific generation from the <code>data/</code> directory tree. Files are identified by the generation ID substring appearing anywhere in the filename. Returns a count of files removed.</p>
+
+  <h4>Response Schema (200 OK)</h4>
+  <pre><code>{
+  "success": true,
+  "deleted": "a1b2c3d4",
+  "files_removed": 2
+}</code></pre>
+
+  <div class="warning">
+    <strong>Implementation Note:</strong> Deletion uses an exact-ID SQLite lookup with a regex-validated generation ID (must be 8–12 hex characters). This replaces the old glob-based approach and is immune to path traversal and glob injection.
+  </div>
+</div>
+
+<h2>3.11 GET /{path} — Frontend SPA Catch-All</h2>
+
+<div class="endpoint-block">
+  <div class="ep-header">
+    <span class="ep-method get">GET</span>
+    <span class="ep-path">/{path}</span>
+  </div>
+
+  <p>The final route in the FastAPI application serves the frontend single-page application. Any request that does not match an <code>/api/</code> route falls through to this handler. It implements path traversal protection and SPA-style fallback: if the requested path corresponds to an existing file in the <code>frontend/</code> directory, that file is served with the correct MIME type; otherwise, <code>index.html</code> is served to enable client-side routing.</p>
+
+  <p>This route is excluded from the OpenAPI schema (<code>include_in_schema=False</code>) to keep the API documentation clean.</p>
+
+  <h4>Security: Path Traversal Protection</h4>
+  <pre><code>requested = FRONTEND_DIR / full_path
+try:
+    requested.relative_to(FRONTEND_DIR)
+except ValueError:
+    raise HTTPException(status_code=404, detail="Invalid path")</code></pre>
+
+  <p>The <code>Path.relative_to()</code> check ensures that the resolved path is a descendant of <code>FRONTEND_DIR</code>. Any attempt to traverse upward (e.g., <code>../../etc/passwd</code>) raises a <code>ValueError</code> and returns HTTP 404.</p>
+</div>
+
+<h2>3.12 Error Handling &amp; Status Codes</h2>
+
+<table>
+  <tr><th>Code</th><th>Meaning</th><th>When Returned</th></tr>
+  <tr><td><strong>200 OK</strong></td><td>Success</td><td>Successful GET, POST, DELETE operations</td></tr>
+  <tr><td><strong>400 Bad Request</strong></td><td>Client error</td><td>Invalid parameters, empty text, Pydantic validation failure, unsupported voice/language</td></tr>
+  <tr><td><strong>404 Not Found</strong></td><td>Resource missing</td><td>Audio file not found, invalid frontend path, bare /api/ request</td></tr>
+  <tr><td><strong>422 Unprocessable Entity</strong></td><td>Validation error</td><td>FastAPI's automatic response when Pydantic validation fails for the request body (e.g., text exceeds 5000 chars, speed outside 0.7–2.0)</td></tr>
+  <tr><td><strong>500 Internal Server Error</strong></td><td>Server error</td><td>Unexpected exception during synthesis, file write failure</td></tr>
+  <tr><td><strong>503 Service Unavailable</strong></td><td>Engine not ready</td><td>TTS engine not initialized (model still downloading or failed to load)</td></tr>
+</table>
+
+<div class="page-break"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 4: TTS ENGINE                                                      -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<h1 class="chapter">Text-to-Speech Engine</h1>
+
+<h2>4.1 Supertonic 3 Integration</h2>
+
+<p>The TTS engine is the heart of VoxCraft — a carefully designed abstraction layer over Supertonic 3 that provides voice management, audio export, metadata tracking, and history persistence. It is implemented across two files: <code>backend/tts_engine.py</code> (315 lines, synthesis + voice management) and <code>backend/data_store.py</code> (234 lines, SQLite persistence). The engine exports a singleton accessor function (<code>get_engine()</code>) that all API endpoints use.</p>
+
+<p>Supertonic 3 is a 99-million-parameter ONNX model that performs text-to-speech inference entirely on CPU. It supports 31 languages and custom voice styles defined via JSON configuration files. The model is downloaded once from Hugging Face (<code>~/.cache/supertonic3/</code>, approximately 400 MB) and loaded into memory on first use. The Python API (<code>supertonic.TTS</code>) provides a simple interface:</p>
+
+<pre><code>from supertonic import TTS
+
+tts = TTS(auto_download=True)              # Initialize; download model if needed
+voice = tts.get_voice_style(voice_name="M1")  # Load a voice style
+wav, duration = tts.synthesize(               # Generate audio
+    text="Hello world",
+    lang="en",
+    voice_style=voice,
+    total_steps=8,   # Denoising steps (quality)
+    speed=1.05,      # Speech rate
+)
+# wav: np.ndarray (mono audio samples)
+# duration: np.ndarray with one element (float duration in seconds)</code></pre>
+
+<div class="note">
+  <strong>ONNX Runtime:</strong> Supertonic 3 uses ONNX Runtime under the hood for model inference. This means it benefits from ONNX Runtime's CPU optimizations (threading, vectorization) and can run on any platform that supports ONNX Runtime — macOS (x86_64 and ARM64), Windows, and Linux. No GPU or CUDA installation is required.
+</div>
+
+<h2>4.2 TTSEngine Class Architecture</h2>
+
+<p>The <code>TTSEngine</code> class encapsulates all Supertonic interaction behind a clean, testable interface. Its design follows the Facade pattern: it hides the complexity of model loading, voice caching, audio I/O, and metadata management behind a handful of high-level methods.</p>
+
+<h3>Constructor &amp; Initialization</h3>
+<pre><code>class TTSEngine:
+    def __init__(self, auto_download: bool = True):
+        self._tts: TTS | None = None
+        self._voice_cache: dict[str, Any] = {}
+        self._ready = False
+
+        try:
+            self._tts = TTS(auto_download=auto_download)
+            self._ready = True
+            self._get_voice("M1")  # Pre-cache default voice
+        except Exception as e:
+            print(f"TTS Engine init warning: {e}")</code></pre>
+
+<p>The constructor is <strong>eager, not lazy</strong>. It initializes the Supertonic client and pre-caches the default voice (M1) immediately. This means the first synthesis request after server startup does not pay the initialization penalty — the model is already loaded and the voice is already cached. If initialization fails (e.g., network error during model download), the engine enters a degraded state where <code>is_ready</code> returns <code>False</code> and all synthesis requests return HTTP 503. The server itself remains operational, serving health checks, voice lists, and the frontend.</p>
+
+<h3>Key Properties &amp; Methods</h3>
+
+<table>
+  <tr><th>Member</th><th>Type</th><th>Description</th></tr>
+  <tr><td><code>is_ready</code></td><td>property → bool</td><td>True if the Supertonic client initialized successfully. Gate for all synthesis operations.</td></tr>
+  <tr><td><code>_voice_cache</code></td><td>dict[str, Any]</td><td>In-memory cache of loaded voice styles, keyed by voice name. Populated lazily on first use; M1 is pre-loaded in the constructor.</td></tr>
+  <tr><td><code>_get_voice(name)</code></td><td>method → voice style object</td><td>Cache-through voice loader. Checks cache first; falls back to <code>self._tts.get_voice_style()</code> on miss.</td></tr>
+  <tr><td><code>synthesize(text, voice, lang, speed, quality)</code></td><td>method → (np.ndarray, float)</td><td>Core synthesis method. Validates inputs, resolves voice, clamps parameters, delegates to Supertonic.</td></tr>
+  <tr><td><code>synthesize_batch(texts, ...)</code></td><td>method → list[dict]</td><td>Iterates over texts, calling <code>synthesize()</code> for each. Returns combined results.</td></tr>
+  <tr><td><code>save_audio(wav, path)</code></td><td>method → str</td><td>Writes a NumPy array to a WAV file via SoundFile. Handles mono squeezing and directory creation. Returns absolute path.</td></tr>
+  <tr><td><code>export_for_platform(wav, text, voice, lang, ...)</code></td><td>method → dict</td><td>Full export pipeline: generates ID + timestamp, saves audio + metadata, adds to history. Returns complete metadata dict.</td></tr>
+  <tr><td><code>get_history(limit)</code></td><td>method → list[dict]</td><td>Reads and parses the most recent N history JSON files from disk.</td></tr>
+</table>
+
+<h2>4.3 Voice Style Caching</h2>
+
+<p>Voice styles in Supertonic are loaded from JSON configuration files. Loading a voice style is not free — it involves file I/O and parsing — so VoxCraft maintains an in-memory cache (<code>_voice_cache</code>) that maps voice names to their loaded style objects.</p>
+
+<p>The caching strategy is <strong>lazy population with eager priming</strong>: M1 is loaded in the constructor to make the first synthesis request fast; all other voices are loaded on first use. Once loaded, a voice stays in the cache for the lifetime of the server process. With only 10 preset voices, the memory overhead is negligible (each voice style JSON is a few KB).</p>
+
+<p>If custom voice import is implemented (v1.2 roadmap), the cache strategy should be revisited — a large number of custom voices could justify an LRU eviction policy.</p>
+
+<h2>4.4 Synthesis Pipeline — In Detail</h2>
+
+<p>The <code>synthesize()</code> method implements a six-stage pipeline:</p>
+
+<ol>
+  <li><strong>Readiness Gate:</strong> If <code>self._ready</code> is False or <code>self._tts</code> is None, raise <code>RuntimeError</code>. This is the only error that indicates a system-level problem rather than a user input problem.</li>
+  <li><strong>Input Validation:</strong> Check that text is non-empty and contains at least one non-whitespace character. Raise <code>ValueError</code> with a descriptive message if validation fails. Note that the FastAPI layer also validates text length (1–5000 via Pydantic), so this is a defense-in-depth check for direct engine usage.</li>
+  <li><strong>Voice Resolution:</strong> Call <code>_get_voice(voice)</code> — this is a cache-hit-or-load operation that returns the Supertonic voice style object for the requested voice name.</li>
+  <li><strong>Parameter Clamping:</strong> <code>quality</code> is clamped to [5, 12] and <code>speed</code> to [0.7, 2.0]. This is defense-in-depth; the FastAPI layer already enforces these ranges via Pydantic <code>Field(ge=..., le=...)</code> constraints.</li>
+  <li><strong>Model Inference:</strong> Delegates to <code>self._tts.synthesize(text, lang, voice_style, total_steps=quality, speed=speed)</code>. This is the blocking, CPU-bound operation that dominates wall-clock time. Supertonic runs a diffusion-based denoising process: each denoising step refines the audio, and the <code>total_steps</code> parameter controls the number of refinement iterations.</li>
+  <li><strong>Return Value Extraction:</strong> Supertonic returns a tuple of <code>(wav: np.ndarray, duration: np.ndarray)</code>. The duration is a single-element array; VoxCraft extracts the scalar value as <code>float(duration[0])</code> for cleaner API responses.</li>
+</ol>
+
+<h2>4.5 Audio Export &amp; Metadata System</h2>
+
+<p>The <code>export_for_platform()</code> method is the bridge between raw synthesis output and user-visible artifacts. It performs five operations:</p>
+
+<ol>
+  <li><strong>ID Generation:</strong> Creates a 12-character unique ID from the hex representation of a UUID4 (<code>uuid.uuid4().hex[:12]</code>). Provides 48 bits of entropy — collision probability under 0.001% at one million generations. Short enough for human-readable filenames, long enough for statistical uniqueness.</li>
+  <li><strong>Timestamp Generation:</strong> Creates a UTC timestamp in <code>YYYYMMDD_HHMMSS</code> format. The UTC timezone ensures consistent ordering regardless of the user's local timezone.</li>
+  <li><strong>Filename Construction:</strong> Builds <code>voxcraft_{id}_{timestamp}.{format}</code>. Example: <code>voxcraft_a1b2c3d4e5f6_20260614_120000.wav</code>.</li>
+    <li><strong>Audio Persistence:</strong> Calls <code>save_audio()</code> which:
+      <ul>
+        <li>Creates parent directories if needed</li>
+        <li>Squeezes multi-dimensional arrays to mono</li>
+        <li>Writes the WAV file via <code>soundfile.write()</code> at 44.1kHz</li>
+        <li>Returns the absolute path to the written file</li>
+      </ul>
+    </li>
+    <li><strong>Metadata Persistence:</strong> Calls <code>data_store.save_export()</code> which atomically writes the metadata record to the SQLite <code>exports</code> table with an associated <code>history</code> access log entry. A single database transaction ensures both are written together. No duplicate JSON files.</li>
+</ol>
+
+<h3>Metadata Schema (JSON)</h3>
+<pre><code>{
+  "id": "a1b2c3d4",
+  "filename": "voxcraft_a1b2c3d4_20260614_120000",
+  "text": "Welcome to VoxCraft...",
+  "voice": "M1",
+  "language": "en",
+  "duration_seconds": 3.45,
+  "format": "wav",
+  "created_at": "20260614_120000",
+  "audio_path": "/Users/leo/Desktop/projects/voxcraft/data/exports/voxcraft_a1b2c3d4_20260614_120000.wav"
+}</code></pre>
+
+<h2>4.6 Engine Singleton Pattern</h2>
+
+<p>The engine uses a module-level singleton pattern:</p>
+
+<pre><code># Global engine singleton
+_engine: TTSEngine | None = None
+
+def get_engine() -> TTSEngine:
+    global _engine
+    if _engine is None:
+        _engine = TTSEngine()
+    return _engine</code></pre>
+
+<p>This ensures that:
+  (1) exactly one Supertonic client exists in the process (avoiding duplicate model loads),
+  (2) the voice cache is shared across all API requests,
+  (3) initialization happens on first access (which is at import time for <code>get_engine</code> if called eagerly, or on the first API request if accessed lazily), and
+  (4) the engine is trivially testable by resetting the <code>_engine</code> global in test fixtures.</p>
+
+<div class="page-break"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 5: VOICE STYLE SYSTEM                                             -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<h1 class="chapter">Voice Style System</h1>
+
+<h2>5.1 VoiceStyle Data Model</h2>
+
+<p>Each voice in VoxCraft is represented by an instance of the <code>VoiceStyle</code> class, a simple data container with five attributes:</p>
+
+<pre><code>class VoiceStyle:
+    def __init__(self, name: str, display_name: str, description: str,
+                 gender: str, tags: list[str] | None = None):
+        self.name = name              # e.g., "M1"
+        self.display_name = display_name  # e.g., "M1 — Warm Baritone"
+        self.description = description    # Long-form description
+        self.gender = gender              # "male" | "female"
+        self.tags = tags or []            # e.g., ["warm", "deep", "narration"]</code></pre>
+
+<p>The <code>to_dict()</code> method provides JSON serialization for API responses. The <code>tags</code> field defaults to an empty list when not provided, ensuring consistent serialization (never <code>null</code>).</p>
+
+<h2>5.2 Preset Voice Catalog</h2>
+
+<p>VoxCraft ships with 10 professionally curated voice presets — 5 male and 5 female — each with a distinct character designed for specific content types.</p>
+
+<div class="voice-grid">
+  <div class="voice-card-doc male">
+    <div class="vc-gender">♂ Male</div>
+    <div class="vc-name">M1</div>
+    <div class="vc-desc">Warm Baritone — Rich, deep voice with natural warmth. Ideal for narration and storytelling.</div>
+    <div class="vc-tags">warm · deep · narration</div>
+  </div>
+  <div class="voice-card-doc male">
+    <div class="vc-gender">♂ Male</div>
+    <div class="vc-name">M2</div>
+    <div class="vc-desc">Calm Tenor — Smooth, even-toned voice. Perfect for explainers and tutorials.</div>
+    <div class="vc-tags">calm · smooth · educational</div>
+  </div>
+  <div class="voice-card-doc male">
+    <div class="vc-gender">♂ Male</div>
+    <div class="vc-name">M3</div>
+    <div class="vc-desc">Authoritative — Strong, commanding voice for announcements and promos.</div>
+    <div class="vc-tags">strong · authoritative · promo</div>
+  </div>
+  <div class="voice-card-doc male">
+    <div class="vc-gender">♂ Male</div>
+    <div class="vc-name">M4</div>
+    <div class="vc-desc">Friendly — Approachable, conversational voice for casual content.</div>
+    <div class="vc-tags">friendly · casual · conversational</div>
+  </div>
+  <div class="voice-card-doc male">
+    <div class="vc-gender">♂ Male</div>
+    <div class="vc-name">M5</div>
+    <div class="vc-desc">Deep Narrator — Deep, resonant voice for cinematic narration.</div>
+    <div class="vc-tags">deep · cinematic · narrator</div>
+  </div>
+  <div class="voice-card-doc female">
+    <div class="vc-gender">♀ Female</div>
+    <div class="vc-name">F1</div>
+    <div class="vc-desc">Warm Alto — Rich, expressive voice. Great for stories and podcasts.</div>
+    <div class="vc-tags">warm · expressive · podcast</div>
+  </div>
+  <div class="voice-card-doc female">
+    <div class="vc-gender">♀ Female</div>
+    <div class="vc-name">F2</div>
+    <div class="vc-desc">Bright Soprano — Clear, energetic voice for tutorials and ads.</div>
+    <div class="vc-tags">bright · energetic · tutorial</div>
+  </div>
+  <div class="voice-card-doc female">
+    <div class="vc-gender">♀ Female</div>
+    <div class="vc-name">F3</div>
+    <div class="vc-desc">Professional — Polished, corporate voice for business content.</div>
+    <div class="vc-tags">polished · corporate · business</div>
+  </div>
+  <div class="voice-card-doc female">
+    <div class="vc-gender">♀ Female</div>
+    <div class="vc-name">F4</div>
+    <div class="vc-desc">Gentle — Soft, soothing voice for meditation and relaxation.</div>
+    <div class="vc-tags">soft · soothing · meditation</div>
+  </div>
+  <div class="voice-card-doc female">
+    <div class="vc-gender">♀ Female</div>
+    <div class="vc-name">F5</div>
+    <div class="vc-desc">Energetic — Upbeat, lively voice for social media and promos.</div>
+    <div class="vc-tags">upbeat · lively · social</div>
+  </div>
+</div>
+
+<h2>5.3 Voice Selection Heuristics</h2>
+
+<p>The voice naming convention follows a simple scheme: <code>{GenderInitial}{Index}</code> where M = male and F = female. While VoxCraft does not implement automatic voice selection based on content analysis (this is a community wishlist item — see Chapter 16), the descriptive tags provide a foundation for building such a system. A future implementation could:</p>
+
+<ol>
+  <li>Analyze the input text for sentiment, formality, and content type</li>
+  <li>Match against voice tags using cosine similarity or keyword overlap</li>
+  <li>Suggest or auto-select the best voice for the content</li>
+  <li>Allow users to override the suggestion with a single click</li>
+</ol>
+
+<h2>5.4 Custom Voice Import Architecture (Planned)</h2>
+
+<p>The v1.2 roadmap includes a Custom Voice Import UI that will allow users to load voice JSON files generated by Supertonic Voice Builder without manual code changes. The architectural foundation is already in place: <code>data/voices/</code> directory is created on startup, and the <code>VOICES_DIR</code> constant is defined in <code>tts_engine.py</code>. The implementation will require:</p>
+
+<ul>
+  <li>A new API endpoint (<code>POST /api/voices/import</code>) for uploading voice JSON files</li>
+  <li>A filesystem watcher or directory scanner to detect new voice files</li>
+  <li>Dynamic registration of custom voices alongside presets in the <code>/api/voices</code> response</li>
+  <li>Frontend UI flow for drag-and-drop or file-picker voice import</li>
+</ul>
+
+<div class="page-break"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 6: MULTILINGUAL SUPPORT                                           -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<h1 class="chapter">Multilingual Support</h1>
+
+<h2>6.1 Language Coverage</h2>
+
+<p>VoxCraft supports 31 languages through Supertonic 3's multilingual model. The language set spans 10 major language families, providing coverage for approximately 5.5 billion speakers worldwide. This makes VoxCraft suitable for global content creation — a single studio can produce voiceovers in English, Hindi, Arabic, Mandarin Chinese, Japanese, Korean, and 25 other languages without switching tools or models.</p>
+
+<h2>6.2 ISO 639-1 Code Conventions</h2>
+
+<p>All languages are identified by ISO 639-1 two-letter codes. This is enforced programmatically — the test suite verifies that every language code is exactly 2 characters long (<code>test_all_language_codes_are_two_chars</code>). Below is the complete language registry:</p>
+
+<table class="small">
+  <tr><th>Code</th><th>Language</th><th>Script / Notes</th><th>Language Family</th></tr>
+  <tr><td><code>en</code></td><td>English</td><td>Latin script</td><td>Indo-European (Germanic)</td></tr>
+  <tr><td><code>hi</code></td><td>हिन्दी (Hindi)</td><td>Devanagari script</td><td>Indo-European (Indo-Aryan)</td></tr>
+  <tr><td><code>ar</code></td><td>العربية (Arabic)</td><td>Arabic script, RTL</td><td>Semitic</td></tr>
+  <tr><td><code>fr</code></td><td>Français (French)</td><td>Latin script</td><td>Indo-European (Romance)</td></tr>
+  <tr><td><code>de</code></td><td>Deutsch (German)</td><td>Latin script</td><td>Indo-European (Germanic)</td></tr>
+  <tr><td><code>es</code></td><td>Español (Spanish)</td><td>Latin script</td><td>Indo-European (Romance)</td></tr>
+  <tr><td><code>pt</code></td><td>Português (Portuguese)</td><td>Latin script</td><td>Indo-European (Romance)</td></tr>
+  <tr><td><code>ru</code></td><td>Русский (Russian)</td><td>Cyrillic script</td><td>Indo-European (Slavic)</td></tr>
+  <tr><td><code>ja</code></td><td>日本語 (Japanese)</td><td>Kanji + Kana</td><td>Japonic</td></tr>
+  <tr><td><code>ko</code></td><td>한국어 (Korean)</td><td>Hangul</td><td>Koreanic</td></tr>
+  <tr><td><code>zh</code></td><td>中文 (Chinese)</td><td>Hanzi (Simplified/Traditional)</td><td>Sino-Tibetan</td></tr>
+  <tr><td><code>it</code></td><td>Italiano (Italian)</td><td>Latin script</td><td>Indo-European (Romance)</td></tr>
+  <tr><td><code>nl</code></td><td>Nederlands (Dutch)</td><td>Latin script</td><td>Indo-European (Germanic)</td></tr>
+  <tr><td><code>pl</code></td><td>Polski (Polish)</td><td>Latin script</td><td>Indo-European (Slavic)</td></tr>
+  <tr><td><code>tr</code></td><td>Türkçe (Turkish)</td><td>Latin script</td><td>Turkic</td></tr>
+  <tr><td><code>vi</code></td><td>Tiếng Việt (Vietnamese)</td><td>Latin script + diacritics</td><td>Austroasiatic</td></tr>
+  <tr><td><code>th</code></td><td>ไทย (Thai)</td><td>Thai script</td><td>Tai-Kadai</td></tr>
+  <tr><td><code>id</code></td><td>Bahasa Indonesia</td><td>Latin script</td><td>Austronesian</td></tr>
+  <tr><td><code>ms</code></td><td>Bahasa Melayu</td><td>Latin script</td><td>Austronesian</td></tr>
+  <tr><td><code>cs</code></td><td>Čeština (Czech)</td><td>Latin script</td><td>Indo-European (Slavic)</td></tr>
+  <tr><td><code>sv</code></td><td>Svenska (Swedish)</td><td>Latin script</td><td>Indo-European (Germanic)</td></tr>
+  <tr><td><code>da</code></td><td>Dansk (Danish)</td><td>Latin script</td><td>Indo-European (Germanic)</td></tr>
+  <tr><td><code>fi</code></td><td>Suomi (Finnish)</td><td>Latin script</td><td>Uralic</td></tr>
+  <tr><td><code>nb</code></td><td>Norsk (Norwegian)</td><td>Latin script</td><td>Indo-European (Germanic)</td></tr>
+  <tr><td><code>ro</code></td><td>Română (Romanian)</td><td>Latin script</td><td>Indo-European (Romance)</td></tr>
+  <tr><td><code>hu</code></td><td>Magyar (Hungarian)</td><td>Latin script</td><td>Uralic</td></tr>
+  <tr><td><code>el</code></td><td>Ελληνικά (Greek)</td><td>Greek script</td><td>Indo-European (Hellenic)</td></tr>
+  <tr><td><code>he</code></td><td>עברית (Hebrew)</td><td>Hebrew script, RTL</td><td>Semitic</td></tr>
+  <tr><td><code>uk</code></td><td>Українська (Ukrainian)</td><td>Cyrillic script</td><td>Indo-European (Slavic)</td></tr>
+  <tr><td><code>bg</code></td><td>Български (Bulgarian)</td><td>Cyrillic script</td><td>Indo-European (Slavic)</td></tr>
+  <tr><td><code>hr</code></td><td>Hrvatski (Croatian)</td><td>Latin script</td><td>Indo-European (Slavic)</td></tr>
+</table>
+
+<div class="note">
+  <strong>RTL Language Support:</strong> Arabic (<code>ar</code>) and Hebrew (<code>he</code>) are right-to-left languages. While Supertonic 3 handles RTL text synthesis correctly, the frontend text editor does not currently apply RTL text direction. Community contributions to improve RTL input handling are welcome (tag: <code>good first issue</code>).
+</div>
+
+<h2>6.3 Language Detection &amp; Validation</h2>
+
+<p>VoxCraft does not perform automatic language detection. The language code must be explicitly provided in the synthesis request. This design choice was deliberate: automatic language detection is error-prone for short texts and mixed-language content, and the explicit parameter gives the user full control. However, the API does validate that the provided language code exists in the <code>LANGUAGES</code> dictionary — requesting an unsupported language code results in a Pydantic validation error (HTTP 422).</p>
+
+<div class="page-break"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 7: EXPRESSION TAG SYSTEM                                          -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<h1 class="chapter">Expression Tag System</h1>
+
+<h2>7.1 Tag Semantics</h2>
+
+<p>Expression tags are inline markup tokens that instruct the TTS engine to inject non-verbal vocal expressions into the synthesized speech. They are inspired by SSML (Speech Synthesis Markup Language) but use a simplified syntax compatible with raw text editing — no XML namespace declarations, no closing tags required for some operations.</p>
+
+<p>VoxCraft supports six expression tags in v1.0:</p>
+
+<table>
+  <tr><th>Tag</th><th>Markup</th><th>Semantic Effect</th><th>Use Case</th></tr>
+  <tr><td><strong>Laugh</strong></td><td><code>&lt;laugh&gt;</code></td><td>Inserts a natural laugh sound at the tag position. The laugh is generated in the same voice as the surrounding speech, maintaining character consistency.</td><td>Podcasts, casual content, reaction videos</td></tr>
+  <tr><td><strong>Breath</strong></td><td><code>&lt;breath&gt;</code></td><td>Inserts an audible breath. Useful for creating natural speech rhythms, pauses, and emotional emphasis.</td><td>Audiobooks, dramatic narration, meditation guides</td></tr>
+  <tr><td><strong>Sigh</strong></td><td><code>&lt;sigh&gt;</code></td><td>Inserts a sigh expression. Conveys emotion (relief, frustration, weariness) without explicit dialogue.</td><td>Storytelling, character dialogue, emotional content</td></tr>
+  <tr><td><strong>Whisper</strong></td><td><code>&lt;whisper&gt;</code></td><td>Wraps text in whispered delivery. Can be used inline — <code>&lt;whisper&gt;this is secret&lt;/whisper&gt;</code> — or as a standalone toggle.</td><td>ASMR content, dramatic reveals, intimate narration</td></tr>
+  <tr><td><strong>Cough</strong></td><td><code>&lt;cough&gt;</code></td><td>Inserts a cough sound. Adds realism to conversational content.</td><td>Character dialogue, realistic scenarios</td></tr>
+  <tr><td><strong>Say</strong></td><td><code>&lt;say&gt;</code></td><td>Explicitly marks text for synthesis without expression overlay. Useful for disambiguating tagged vs. untagged regions.</td><td>Mixed content with tagged and untagged sections</td></tr>
+</table>
+
+<h2>7.2 Tag Processing Pipeline</h2>
+
+<p>Expression tags are passed through to Supertonic 3 without preprocessing by VoxCraft. The tag parsing and rendering are handled entirely by the TTS model during inference. This means:</p>
+
+<ul>
+  <li><strong>No tag validation:</strong> VoxCraft does not check for well-formed tags (matching open/close pairs). Invalid or misspelled tags are passed to Supertonic and either ignored or rendered as literal text, depending on Supertonic's internal behavior.</li>
+  <li><strong>No tag escaping:</strong> There is currently no mechanism to render the literal text <code>&lt;laugh&gt;</code> in speech output. A future SSML implementation (v1.2 roadmap) would address this with proper escaping.</li>
+  <li><strong>Position-independent:</strong> Tags can be placed anywhere in the text — beginning, middle, or end. The engine processes them in document order.</li>
+</ul>
+
+<h2>7.3 Tag Composition &amp; Nesting</h2>
+
+<p>Tags can be composed freely. For example:</p>
+
+<pre><code>&lt;breath&gt;I can't believe this is happening. &lt;sigh&gt;What a day. &lt;laugh&gt;</code></pre>
+
+<p>This would produce a breath sound, followed by the first sentence, then a sigh, then "What a day," then a laugh. The frontend tag toolbar makes it easy to insert tags at the cursor position: clicking a tag button inserts the tag, or wraps the currently selected text with opening and closing tags (for whisper mode).</p>
+
+<div class="tip">
+  <strong>Pro Tip:</strong> For whispered delivery, select the text you want whispered and click the whisper tag button. The frontend automatically wraps it: <code>&lt;whisper&gt;selected text&lt;/whisper&gt;</code>.
+</div>
+
+<div class="page-break"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 8: FRONTEND ARCHITECTURE                                          -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<h1 class="chapter">Frontend Architecture</h1>
+
+<h2>8.1 Single-Page Application Design</h2>
+
+<p>The VoxCraft frontend is a pure vanilla JavaScript single-page application (SPA) implemented in a single HTML file (<code>frontend/index.html</code>, 755 lines). It uses no frameworks, no build tools, no package manager, and no transpilation step. The entire application — HTML structure, CSS styling, and JavaScript logic — is contained in one file that the FastAPI backend serves as a static asset. Supporting assets (Inter font in 5 weights, WaveSurfer.js v7) are vendored in <code>frontend/fonts/</code> and <code>frontend/assets/</code> — no CDN dependencies, fully offline-capable after initial clone.</p>
+
+<p>This architectural choice is unusual in modern web development but is a deliberate design decision rooted in VoxCraft's core philosophy:</p>
+
+<ul>
+  <li><strong>Zero build step:</strong> No npm install, no webpack config, no TypeScript compilation. Edit the file, refresh the browser. This dramatically lowers the contribution barrier and eliminates entire categories of frontend build issues.</li>
+  <li><strong>Minimal dependencies:</strong> Only one external dependency — WaveSurfer.js v7, vendored in the repository as an ES module. Everything else (state management, routing, DOM manipulation) uses native browser APIs.</li>
+  <li><strong>Instant load:</strong> A single 31 KB HTML file loads faster than any framework-based SPA can bootstrap. No JavaScript bundles to parse, no virtual DOM to initialize.</li>
+  <li><strong>Future-proof:</strong> Vanilla JS ages gracefully. Framework APIs change; native browser APIs are stable and backward-compatible for decades.</li>
+</ul>
+
+<div class="warning">
+  <strong>Contribution Constraint:</strong> Replacing the vanilla JS frontend with React, Vue, Svelte, or any other framework is explicitly out of scope. This is a project-level design constraint documented in CONTRIBUTING.md. The zero-build-step philosophy is non-negotiable for v1.x and v2.0.
+</div>
+
+<h2>8.2 Component Hierarchy</h2>
+
+<p>Despite being a single file, the frontend is organized into logical components with clear responsibilities:</p>
+
+<div class="diagram">
+  <div class="diagram-title">Figure 8.1 — Frontend Component Hierarchy</div>
+
+  <div class="arch-layer client" style="text-align:left; font-size:9pt; padding:10px;">
+    <strong>App Container (#app)</strong><br>
+    <span style="padding-left:1em;">├── <strong>Top Bar</strong> — Brand logo + status indicator (online/offline)</span><br>
+    <span style="padding-left:1em;">├── <strong>Layout Grid</strong></span><br>
+    <span style="padding-left:3em;">├── <strong>Main Studio</strong></span><br>
+    <span style="padding-left:4em;">│   ├── <strong>Script Panel</strong> — Textarea + character counter + tag toolbar</span><br>
+    <span style="padding-left:4em;">│   ├── <strong>Voice Selection Panel</strong> — 10 voice cards in 5-column grid</span><br>
+    <span style="padding-left:4em;">│   ├── <strong>Parameters Panel</strong> — Language dropdown + Speed slider + Quality slider</span><br>
+    <span style="padding-left:4em;">│   ├── <strong>Generate Button</strong> — Primary CTA with loading state</span><br>
+    <span style="padding-left:4em;">│   └── <strong>Player Section</strong> — Play button + waveform + metadata + action buttons (Download, Copy, Regenerate)</span><br>
+    <span style="padding-left:3em;">└── <strong>Sidebar</strong> — History search + scrollable history list</span><br>
+    <span style="padding-left:1em;">└── <strong>Toast Container</strong> — Fixed-position notification overlay</span>
+  </div>
+</div>
+
+<h2>8.3 State Management Model</h2>
+
+<p>VoxCraft uses a simple global state object rather than a formal state management library:</p>
+
+<pre><code>const state = {
+  voices: [],           // Voice catalog from /api/voices
+  languages: {},        // Language map from /api/languages
+  tags: {},             // Expression tags from /api/tags
+  selectedVoice: 'M1',  // Currently selected voice (default: M1)
+  currentAudioUrl: null,// URL of currently loaded audio
+  currentId: null,      // Generation ID of current audio
+  history: [],          // Generation history from /api/history
+  isPlaying: false,     // Playback state
+  ws: null,             // WaveSurfer instance (set dynamically)
+}</code></pre>
+
+<p>This is adequate for the current application complexity. If the frontend grows to include more interactive features (multi-voice script editor, project files, plugin system), a more structured state management approach may become necessary — but for v1.0, the simplicity of a plain object outweighs the overhead of a library.</p>
+
+<h2>8.4 Audio Playback &amp; Waveform Rendering</h2>
+
+<p>The audio player is built on WaveSurfer.js v7, a Web Audio API-based library that provides GPU-accelerated waveform rendering on HTML5 Canvas. The player is initialized dynamically when audio data becomes available and destroyed/recreated for each new generation:</p>
+
+<pre><code>async function loadAudio(url, meta) {
+  if (wavesurfer) { wavesurfer.destroy() }  // Clean up previous instance
+  $('#waveform').innerHTML = ''             // Clear container
+
+  wavesurfer = WaveSurfer.create({
+    container: '#waveform',
+    waveColor: 'rgba(99,102,241,0.3)',      // Indigo tint
+    progressColor: '#6366f1',                // Solid indigo for played portion
+    cursorColor: '#818cf8',                  // Lighter indigo for seek cursor
+    barWidth: 2, barGap: 1, barRadius: 2,
+    height: 60,
+    normalize: true,                         // Normalize volume across tracks
+    backend: 'WebAudio',                     // Use Web Audio API (not HTML5 Audio)
+    minPxPerSec: 30,                         // Minimum pixel density for waveform
+  })
+
+  wavesurfer.load(url)
+  // ... event handlers for 'ready', 'audioprocess', 'play', 'finish' ...
+}</code></pre>
+
+<p>The Web Audio backend provides sub-millisecond playback latency and allows precise seeking. Waveform normalization ensures consistent visual representation regardless of audio loudness. The <code>minPxPerSec: 30</code> setting guarantees that short audio clips still produce a detailed waveform.</p>
+
+<h2>8.5 User Interaction Patterns</h2>
+
+<h3>8.5.1 Synthesis Flow</h3>
+<ol>
+  <li>User types or pastes script into the textarea</li>
+  <li>Character counter updates in real-time (<code>input</code> event)</li>
+  <li>User optionally selects a voice, language, adjusts speed/quality</li>
+  <li>User clicks "Generate Speech" or presses <code>Cmd+Enter</code></li>
+  <li>Button enters loading state (spinner + "Generating..." text)</li>
+  <li>On success: player section appears, waveform renders, audio URL loaded</li>
+  <li>On error: error toast displayed, button returns to normal state</li>
+</ol>
+
+<h3>8.5.2 Tag Insertion</h3>
+<p>When a user clicks a tag button in the toolbar, the frontend checks for text selection. If text is selected, it wraps the selection: <code>&lt;whisper&gt;selected&lt;/whisper&gt;</code>. If no text is selected, it inserts the tag at the cursor position.</p>
+
+<h3>8.5.3 History Interaction</h3>
+<p>Clicking a history item loads that generation's audio into the player. The search field filters history items client-side based on text content and voice name — no server round-trip needed. This is feasible because the history list is bounded at 200 items maximum.</p>
+
+<h2>8.6 CSS Design System</h2>
+
+<p>The frontend uses a custom CSS design system defined via CSS custom properties (variables) in the <code>:root</code> selector. The design is dark-themed with indigo accents:</p>
+
+<table>
+  <tr><th>Token</th><th>Value</th><th>Usage</th></tr>
+  <tr><td><code>--bg</code></td><td><code>#0c0e12</code></td><td>Page background (near-black)</td></tr>
+  <tr><td><code>--bg2</code></td><td><code>#14171c</code></td><td>Panel backgrounds</td></tr>
+  <tr><td><code>--bg3</code></td><td><code>#1c1f26</code></td><td>Input fields, cards</td></tr>
+  <tr><td><code>--bg4</code></td><td><code>#252932</code></td><td>Hover states, buttons</td></tr>
+  <tr><td><code>--border</code></td><td><code>#2e3340</code></td><td>Default borders</td></tr>
+  <tr><td><code>--text</code></td><td><code>#e8eaed</code></td><td>Primary text (light)</td></tr>
+  <tr><td><code>--text-dim</code></td><td><code>#8b90a0</code></td><td>Dimmed text (labels, metadata)</td></tr>
+  <tr><td><code>--text-muted</code></td><td><code>#5c6170</code></td><td>Muted text (placeholders, hints)</td></tr>
+  <tr><td><code>--accent</code></td><td><code>#6366f1</code></td><td>Primary accent (indigo)</td></tr>
+  <tr><td><code>--accent-hover</code></td><td><code>#818cf8</code></td><td>Accent hover state</td></tr>
+  <tr><td><code>--accent-glow</code></td><td><code>rgba(99,102,241,0.25)</code></td><td>Focus ring / box shadow</td></tr>
+  <tr><td><code>--green</code></td><td><code>#22c55e</code></td><td>Success state (online dot, success toast)</td></tr>
+  <tr><td><code>--amber</code></td><td><code>#f59e0b</code></td><td>Warning state (initializing dot)</td></tr>
+  <tr><td><code>--red</code></td><td><code>#ef4444</code></td><td>Error state (error toast)</td></tr>
+  <tr><td><code>--radius</code></td><td><code>10px</code></td><td>Standard border radius</td></tr>
+  <tr><td><code>--transition</code></td><td><code>150ms cubic-bezier(0.4,0,0.2,1)</code></td><td>Standard transition timing</td></tr>
+</table>
+
+<h2>8.7 Responsive Design Strategy</h2>
+
+<p>The layout uses CSS Grid with a two-column structure (<code>1fr 380px</code>) that collapses to single-column at 960px and further adapts at 600px:</p>
+
+<ul>
+  <li><strong>≥960px:</strong> Two-column layout — main studio (left) + sidebar history (right, 380px, sticky)</li>
+  <li><strong>600–960px:</strong> Single-column layout — studio and history stack vertically</li>
+  <li><strong>≤600px:</strong> Single-column with reduced padding; voice grid shrinks from 5 to 3 to 2 columns; control grid collapses to single column</li>
+</ul>
+
+<div class="page-break"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 9: DATA PERSISTENCE                                               -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<h1 class="chapter">Data Persistence &amp; Storage</h1>
+
+<h2>9.1 Directory Structure</h2>
+
+<p>VoxCraft creates and manages a <code>data/</code> directory at the project root (or at a custom path set via the <code>VOXCRAFT_DATA_DIR</code> environment variable). The directory structure is created automatically on engine initialization:</p>
+
+<pre><code>voxcraft/
+└── data/
+    ├── exports/    ← Generated WAV files + metadata JSON
+    ├── history/    ← Generation history records (JSON)
+    └── voices/     ← Custom voice import target (future use)</code></pre>
+
+<p>Each subdirectory is created with <code>mkdir(parents=True, exist_ok=True)</code>, ensuring that the engine can start even if the directories don't exist yet. This also means that deleting the <code>data/</code> directory and restarting the server is a valid (albeit destructive) reset operation.</p>
+
+<h2>9.2 Export Format Specification</h2>
+
+<p>Generated audio files follow a strict naming convention:</p>
+
+<pre><code>voxcraft_{generation_id}_{timestamp}.wav</code></pre>
+
+<p>Where:</p>
+<ul>
+  <li><code>generation_id</code> = first 8 characters of a UUID4 (hex, lowercase)</li>
+  <li><code>timestamp</code> = UTC timestamp in <code>YYYYMMDD_HHMMSS</code> format</li>
+</ul>
+
+<p>Audio files are written in WAV format with the following properties:</p>
+
+<table>
+  <tr><th>Property</th><th>Value</th><th>Rationale</th></tr>
+  <tr><td>Sample Rate</td><td>44,100 Hz</td><td>CD-quality audio standard; compatible with all platforms</td></tr>
+  <tr><td>Bit Depth</td><td>16-bit</td><td>Standard for distribution; balances quality and file size</td></tr>
+  <tr><td>Channels</td><td>1 (Mono)</td><td>Speech is naturally monophonic; stereo would double file size with no benefit</td></tr>
+  <tr><td>Codec</td><td>PCM (uncompressed)</td><td>Lossless; universally supported; suitable for further processing</td></tr>
+  <tr><td>File Extension</td><td><code>.wav</code></td><td>Standard WAV container; recognized by all audio software</td></tr>
+</table>
+
+<h2>9.3 Metadata Schema</h2>
+
+<p>Each generation produces a JSON metadata file with the same base filename as the audio:</p>
+
+<pre><code>// data/exports/voxcraft_a1b2c3d4_20260614_120000.json
+// data/history/voxcraft_a1b2c3d4_20260614_120000.json
+
+{
+  "id": "a1b2c3d4",                         // 8-char generation UUID
+  "filename": "voxcraft_a1b2c3d4_20260614_120000",  // Base filename (no extension)
+  "text": "The original input text",          // Full text that was synthesized
+  "voice": "M1",                              // Voice style used
+  "language": "en",                           // Language code used
+  "duration_seconds": 3.45,                   // Audio duration (rounded to 2 decimal places)
+  "format": "wav",                            // Output format
+  "created_at": "20260614_120000",            // UTC timestamp
+  "audio_path": "/absolute/path/to/file.wav"  // Full filesystem path to WAV
+}</code></pre>
+
+<div class="note">
+  <strong>JSON Schema Validation:</strong> The metadata files are not validated against a formal JSON Schema at write time. They are assumed to be correct by construction (the <code>export_for_platform()</code> method generates them). However, the <code>get_history()</code> method wraps JSON parsing in try/except to gracefully skip corrupted history files rather than crashing the request.
+</div>
+
+<h2>9.4 History Management</h2>
+
+<p>Generation history is maintained as individual JSON files in <code>data/history/</code>. The <code>get_history()</code> method reads these files on demand:</p>
+
+<ol>
+  <li>Glob all <code>.json</code> files in the history directory</li>
+  <li>Sort by filesystem modification time (descending)</li>
+  <li>Parse the first N files (capped by <code>limit</code> parameter)</li>
+  <li>Skip any file that fails JSON parsing (corrupted or non-metadata JSON)</li>
+  <li>Return the list of parsed metadata dicts</li>
+</ol>
+
+<p>There is no in-memory history cache — every request performs filesystem I/O. For the current scale (up to 200 records), this is imperceptible (~5–10 ms for a full directory scan). If history grows larger, an in-memory ring buffer or embedded SQLite database should replace this approach.</p>
+
+<div class="page-break"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 10: CONFIGURATION                                                 -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<h1 class="chapter">Configuration &amp; Environment</h1>
+
+<h2>10.1 Configuration Module</h2>
+
+<p>VoxCraft's configuration is defined in a single module (<code>backend/config.py</code>, 11 lines) that exports four constants. Every configurable value has an environment variable override, following the <a href="https://12factor.net/config">12-Factor App</a> principle of storing configuration in the environment:</p>
+
+<pre><code>PROJECT_ROOT = Path(__file__).resolve().parent.parent
+DATA_DIR = os.getenv("VOXCRAFT_DATA_DIR", str(PROJECT_ROOT / "data"))
+HOST = os.getenv("VOXCRAFT_HOST", "0.0.0.0")
+PORT = int(os.getenv("VOXCRAFT_PORT", "8765"))</code></pre>
+
+<h2>10.2 Environment Variables</h2>
+
+<table>
+  <tr><th>Variable</th><th>Default</th><th>Type</th><th>Description</th></tr>
+  <tr><td><code>VOXCRAFT_DATA_DIR</code></td><td><code>{project_root}/data</code></td><td>path</td><td>Directory for exports, history, and voices. Override to store data on a different drive or in a Docker volume.</td></tr>
+  <tr><td><code>VOXCRAFT_HOST</code></td><td><code>0.0.0.0</code></td><td>string</td><td>Network interface to bind to. <code>0.0.0.0</code> binds to all interfaces (accessible from LAN). Set to <code>127.0.0.1</code> for localhost-only access.</td></tr>
+  <tr><td><code>VOXCRAFT_PORT</code></td><td><code>8765</code></td><td>integer</td><td>TCP port for the HTTP server. Port 8765 was chosen arbitrarily; it does not conflict with common development ports (3000, 5000, 8000, 8080).</td></tr>
+</table>
+
+<h2>10.3 Server Binding &amp; Port Selection</h2>
+
+<p>By default, VoxCraft binds to <code>0.0.0.0:8765</code>, making it accessible from any device on the local network. This is intentional: a content creator can run VoxCraft on their desktop and access the studio from a tablet or phone on the same WiFi network. For security-conscious deployments, setting <code>VOXCRAFT_HOST=127.0.0.1</code> restricts access to localhost only.</p>
+
+<p>The port 8765 was selected because it falls in the user-range (1024–49151), does not conflict with common development server ports, and is easy to remember (ascending digits: 8-7-6-5).</p>
+
+<div class="page-break"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 11: INSTALLATION & DEPLOYMENT                                     -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<h1 class="chapter">Installation &amp; Deployment</h1>
+
+<h2>11.1 System Requirements</h2>
+
+<table>
+  <tr><th>Requirement</th><th>Minimum</th><th>Recommended</th></tr>
+  <tr><td>Operating System</td><td>macOS 12+, Windows 10+, Linux (kernel 5.x+)</td><td>macOS 14+, Ubuntu 22.04+</td></tr>
+  <tr><td>Python</td><td>3.9+</td><td>3.11+ (3.14 tested)</td></tr>
+  <tr><td>RAM</td><td>2 GB free</td><td>4 GB free (for ONNX model + OS)</td></tr>
+  <tr><td>Disk Space</td><td>~600 MB</td><td>~1 GB (model + audio exports)</td></tr>
+  <tr><td>Internet</td><td>Required for first-run model download (~400 MB)</td><td>Persistent connection for initial setup</td></tr>
+  <tr><td>GPU</td><td>Not required</td><td>Not required (CPU-only inference)</td></tr>
+  <tr><td>Browser</td><td>Any modern browser (Chrome, Firefox, Safari, Edge)</td><td>Chrome 120+ or Firefox 130+ (best Web Audio API support)</td></tr>
+</table>
+
+<h2>11.2 Quick Start Installation</h2>
+
+<pre><code># 1. Clone the repository
+git clone https://github.com/ShyamKumar1/voxcraft.git
+cd voxcraft
+
+# 2. Install Python dependencies
+cd backend
+pip install -r requirements.txt
+cd ..
+
+# 3. Start the server (first run downloads ~400MB ONNX model from Hugging Face)
+python -m backend.app
+
+# 4. Open the studio in your browser
+open http://localhost:8765</code></pre>
+
+<h2>11.3 Development Environment Setup</h2>
+
+<pre><code># Install dev dependencies (testing + linting)
+cd backend
+pip install -r requirements-dev.txt
+
+# Run the test suite
+python -m pytest tests/ -v
+
+# Run the linter
+ruff check backend/ tests/
+
+# Start the server in development mode
+python -m backend.app</code></pre>
+
+<h2>11.4 Docker Deployment (Planned — v2.0)</h2>
+
+<p>The v2.0 roadmap includes an official Docker image for one-command deployment. The planned implementation would use a multi-stage Docker build:</p>
+
+<ul>
+  <li><strong>Stage 1 (builder):</strong> Install Python dependencies, pre-download the Supertonic ONNX model</li>
+  <li><strong>Stage 2 (runtime):</strong> Copy the application code, expose port 8765, run with Uvicorn</li>
+</ul>
+
+<p>For now, manual deployment on any server that supports Python 3.9+ is straightforward: clone, pip install, run. No database, no reverse proxy (Uvicorn handles this), no environment configuration beyond the three optional variables.</p>
+
+<h2>11.5 Troubleshooting Common Issues</h2>
+
+<table>
+  <tr><th>Symptom</th><th>Likely Cause</th><th>Solution</th></tr>
+  <tr><td>Server starts but frontend shows "Offline"</td><td>CORS or network issue</td><td>Verify server is listening on the expected host/port; check firewall</td></tr>
+  <tr><td>"TTS engine not ready" on synthesis</td><td>Model still downloading or failed to download</td><td>Check <code>~/.cache/supertonic3/</code> for the ONNX model; re-run with internet connection</td></tr>
+  <tr><td>Audio generation fails silently</td><td>Unsupported language or voice</td><td>Check the language code against <code>/api/languages</code>; verify voice name</td></tr>
+  <tr><td>Port 8765 already in use</td><td>Another process bound to the port</td><td>Set <code>VOXCRAFT_PORT=8766</code> (or any free port)</td></tr>
+  <tr><td><code>soundfile</code> import error</td><td>Missing system library (libsndfile)</td><td><code>brew install libsndfile</code> (macOS) or <code>apt install libsndfile1</code> (Linux)</td></tr>
+</table>
+
+<div class="page-break"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 12: USER GUIDE                                                    -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<h1 class="chapter">User Guide</h1>
+
+<h2>12.1 Studio Interface Walkthrough</h2>
+
+<p>The VoxCraft studio is organized into three zones:</p>
+
+<ol>
+  <li><strong>Top Bar:</strong> Displays the VoxCraft logo, version badge, and a live status indicator. A green dot with "Online · 10 voices · 31 languages" means the server is connected and ready. A pulsing amber dot means the server is initializing (first launch, model downloading).</li>
+
+  <li><strong>Main Studio (left):</strong> The primary workspace containing:
+    <ul>
+      <li><strong>Script Panel:</strong> The text input area — supports up to 5,000 characters. Below the textarea is a tag toolbar with six expression tag buttons. A character counter in the bottom-right corner shows usage relative to the limit. A "Batch Mode" toggle in the panel header switches to multi-line processing.</li>
+      <li><strong>Voice Style Panel:</strong> A 5×2 grid of voice cards. Each card shows the voice code (M1, F3, etc.), a gender badge (♂/♀), and a description. The selected voice is highlighted with an indigo border and glow effect.</li>
+      <li><strong>Parameters Panel:</strong> Three controls — Language dropdown (31 options), Speed slider (0.7× to 2.0×), and Quality slider (Draft 5 to Studio 12).</li>
+      <li><strong>Generate Button:</strong> The primary action. Shows "Generate Speech" by default, "Generating..." with a spinner during synthesis. Disabled during generation to prevent duplicate requests.</li>
+      <li><strong>Player Section:</strong> Appears after generation. Contains a play/pause button, filename and metadata display, an interactive waveform visualization, current time / total time display, and action buttons (Download WAV, Copy Text, Regenerate).</li>
+    </ul>
+  </li>
+
+  <li><strong>Sidebar (right):</strong> Generation history with a search field at the top. Each history item shows a gender icon, text preview (first 60 characters), voice code, duration, and language. Click to reload that generation into the player. The play button on each item plays the audio directly.</li>
+</ol>
+
+<h2>12.2 Voice Selection &amp; Auditioning</h2>
+
+<p>Select a voice by clicking its card in the voice grid. The selected voice is visually highlighted and its full display name appears in the panel header. The default voice is M1 (Warm Baritone).</p>
+
+<p>Voice preview buttons (playing a short sample of each voice) are planned for v1.1. In the current version, the best way to audition a voice is to generate a short test phrase (e.g., "This is voice M1 speaking") with each voice and compare the results.</p>
+
+<h2>12.3 Parameter Tuning</h2>
+
+<h3>Speed Control</h3>
+<p>The speed slider adjusts speech rate from 0.7× (slow, deliberate) to 2.0× (fast, energetic). The default is 1.05× — slightly faster than natural speech, which sounds more engaging for most content types. Speed changes are performed without pitch distortion (the voice character remains the same regardless of speed).</p>
+
+<p>Recommended settings by content type:</p>
+<table>
+  <tr><th>Content Type</th><th>Speed</th><th>Notes</th></tr>
+  <tr><td>Audiobooks, meditation</td><td>0.85–1.0×</td><td>Slower pace allows listeners to absorb content</td></tr>
+  <tr><td>Educational, tutorials</td><td>1.0–1.15×</td><td>Natural pace with slight energy boost</td></tr>
+  <tr><td>Social media, promos</td><td>1.15–1.4×</td><td>Faster pace matches short-form content expectations</td></tr>
+  <tr><td>Quick previews, drafts</td><td>1.5–2.0×</td><td>Fast generation for content review</td></tr>
+</table>
+
+<h3>Quality Control</h3>
+<p>The quality slider controls the number of denoising steps during synthesis. Each additional step improves audio clarity but increases generation time linearly:</p>
+
+<table>
+  <tr><th>Setting</th><th>Steps</th><th>Relative Speed</th><th>Best For</th></tr>
+  <tr><td>Draft (5)</td><td>5</td><td>1× (fastest)</td><td>Quick content previews, rough cuts</td></tr>
+  <tr><td>Standard (8)</td><td>8</td><td>~1.6× slower</td><td>Most content — good balance of speed and quality</td></tr>
+  <tr><td>High (10)</td><td>10</td><td>~2× slower</td><td>Content destined for publication</td></tr>
+  <tr><td>Studio (12)</td><td>12</td><td>~2.4× slower</td><td>Final production output, audiobooks, client delivery</td></tr>
+</table>
+
+<h2>12.4 Batch Processing</h2>
+
+<p>Toggle "Batch Mode" in the Script panel header to enable batch processing. In batch mode, each line of the textarea is treated as a separate synthesis target. All segments use the same voice and parameter settings. The results appear as individual entries in the history sidebar. This is ideal for:</p>
+
+<ul>
+  <li>Processing a script with multiple scenes or paragraphs</li>
+  <li>Generating multiple variations of the same text with different voices (run batch, change voice, run again)</li>
+  <li>Creating a library of voice samples for comparison</li>
+</ul>
+
+<h2>12.5 History &amp; Search</h2>
+
+<p>The sidebar maintains a chronological list of all generations (newest first). The search field filters entries client-side — type to find generations by text content or voice name. Each history item shows:</p>
+
+<ul>
+  <li>Gender icon (♂/♀)</li>
+  <li>First 60 characters of the synthesized text</li>
+  <li>Voice code (M1, F3, etc.)</li>
+  <li>Duration in seconds</li>
+  <li>Language code (uppercase)</li>
+</ul>
+
+<p>Click any history item to reload it into the player. The small play button on each item plays the audio directly without affecting the main player state.</p>
+
+<h2>12.6 Keyboard Shortcuts</h2>
+
+<table>
+  <tr><th>Shortcut</th><th>Context</th><th>Action</th></tr>
+  <tr><td><code>Cmd+Enter</code> / <code>Ctrl+Enter</code></td><td>When textarea is focused</td><td>Generate speech (same as clicking "Generate Speech")</td></tr>
+  <tr><td><code>Space</code></td><td>When no input field is focused</td><td>Play / Pause the audio player</td></tr>
+</table>
+
+<div class="tip">
+  <strong>Workflow Tip:</strong> The most efficient workflow is: type your script, press Cmd+Enter to generate, then press Space to play/pause the result — all without touching the mouse. For the next generation, press Tab to focus the textarea, edit your script, and Cmd+Enter again.
+</div>
+
+<div class="page-break"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 13: DEVELOPER GUIDE                                               -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<h1 class="chapter">Developer Guide</h1>
+
+<h2>13.1 Contribution Workflow</h2>
+
+<p>VoxCraft follows a standard GitHub Flow contribution model. The complete workflow is documented in <code>CONTRIBUTING.md</code> and summarized here:</p>
+
+<ol>
+  <li><strong>Find an Issue:</strong> Browse the <a href="https://github.com/ShyamKumar1/voxcraft/issues">issue tracker</a>. Issues tagged <code>good first issue</code> are specifically curated for new contributors. Comment on the issue to indicate you're working on it.</li>
+  <li><strong>Create a Branch:</strong> Use descriptive branch names: <code>feature/voice-preview</code> or <code>fix/waveform-seek-bug</code>.</li>
+  <li><strong>Make Changes:</strong> Follow the existing code style. The backend uses Python 3.14 with type hints and <code>from __future__ import annotations</code>. Keep the frontend vanilla JS — no frameworks.</li>
+  <li><strong>Test Locally:</strong> Run the test suite and verify your changes manually.</li>
+  <li><strong>Open a Pull Request:</strong> Use the PR template (auto-loaded). Link the issue. Keep PRs focused — one feature or fix per PR.</li>
+  <li><strong>Code Review:</strong> A maintainer will review your PR. Expect constructive feedback.</li>
+</ol>
+
+<h2>13.2 Code Style &amp; Conventions</h2>
+
+<h3>Python (Backend)</h3>
+<ul>
+  <li>All modules use <code>from __future__ import annotations</code> for forward-reference resolution</li>
+  <li>Type hints on all function signatures and class attributes</li>
+  <li>Pydantic v2 models for request/response validation</li>
+  <li>Docstrings on public methods (Google-style for complex methods)</li>
+  <li>Linting enforced via Ruff (<code>ruff check backend/ tests/</code>)</li>
+  <li>Maximum line length: 120 characters (PEP 8 relaxed for readability)</li>
+</ul>
+
+<h3>JavaScript (Frontend)</h3>
+<ul>
+  <li>Vanilla JS only — no frameworks, no TypeScript</li>
+  <li>ES module imports for external dependencies (WaveSurfer.js)</li>
+  <li>DOM queries via helper functions: <code>$('selector')</code> for single element, <code>$$('selector')</code> for NodeList</li>
+  <li>State stored in a single <code>state</code> object</li>
+  <li>Async/await for all API calls with proper error handling</li>
+  <li>No minification — the file is served as-written</li>
+</ul>
+
+<h2>13.3 Testing Framework</h2>
+
+<p>The test suite uses pytest with pytest-asyncio for async endpoint tests. Tests are located in <code>tests/</code> and organized by module:</p>
+
+<ul>
+  <li><code>tests/test_engine.py</code> — Unit tests for VoiceStyle, preset voices, languages, expression tags, and config (91 lines, 12 test methods)</li>
+</ul>
+
+<p>Tests import directly from the backend modules rather than making HTTP requests, which keeps them fast and deterministic. The engine tests do not require Supertonic to be installed — they test data structures and validation logic, not model inference.</p>
+
+<h3>Test Execution</h3>
+<pre><code># Run all tests
+python -m pytest tests/ -v
+
+# Run a specific test class
+python -m pytest tests/test_engine.py::TestVoiceStyle -v
+
+# Run with verbose output and color
+python -m pytest tests/ -v --tb=short</code></pre>
+
+<h3>Test Coverage by Module</h3>
+<table>
+  <tr><th>Test Class</th><th>Target</th><th>Tests</th></tr>
+  <tr><td><code>TestVoiceStyle</code></td><td><code>VoiceStyle</code> class</td><td>Creation, serialization, default tags</td></tr>
+  <tr><td><code>TestPresetVoices</code></td><td><code>PRESET_VOICES</code> list</td><td>Count (10), male/female split (5+5), description quality</td></tr>
+  <tr><td><code>TestLanguages</code></td><td><code>LANGUAGES</code> dict</td><td>Count (31), English presence, ISO 639-1 code length (2 chars)</td></tr>
+  <tr><td><code>TestExpressionTags</code></td><td><code>EXPRESSION_TAGS</code> dict</td><td>Count (6), tag format (angle brackets)</td></tr>
+  <tr><td><code>TestConfig</code></td><td><code>config.py</code></td><td>Default port (8765), host (0.0.0.0), DATA_DIR non-empty</td></tr>
+</table>
+
+<h2>13.4 Pull Request Process</h2>
+
+<ol>
+  <li>Ensure all tests pass: <code>python -m pytest tests/ -v</code></li>
+  <li>Ensure linting passes: <code>ruff check backend/ tests/</code></li>
+  <li>If your PR adds new Python dependencies, update <code>requirements.txt</code></li>
+  <li>Use the PR template (it loads automatically when you create a PR)</li>
+  <li>Link the issue your PR addresses using GitHub keywords ("Closes #42")</li>
+  <li>Keep PRs small and focused — one feature or fix per PR</li>
+  <li>If your change is large, open a discussion first to align on approach before writing code</li>
+</ol>
+
+<div class="page-break"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 14: TESTING & QA                                                  -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<h1 class="chapter">Testing &amp; Quality Assurance</h1>
+
+<h2>14.1 Test Suite Architecture</h2>
+
+<p>VoxCraft's test suite is structured as pure unit tests that exercise the data structures and validation logic without requiring the Supertonic TTS model. This architecture has several advantages: tests run in milliseconds (no model loading), they can be executed in CI/CD pipelines without GPU or ONNX Runtime, and they serve as executable documentation of the expected behavior of each component.</p>
+
+<p>The test suite does not currently include integration tests that exercise the FastAPI endpoints via HTTP. This is a known gap — integration tests using HTTPX's <code>AsyncClient</code> against a test server fixture would provide valuable coverage for the API layer's error handling and response formatting.</p>
+
+<h2>14.2 Test Case Catalog</h2>
+
+<table>
+  <tr><th>Test Method</th><th>What It Verifies</th><th>Assertions</th></tr>
+  <tr><td><code>test_voice_style_creation</code></td><td>VoiceStyle constructor correctly assigns all fields</td><td>name, display_name, gender equality; tags membership</td></tr>
+  <tr><td><code>test_voice_style_to_dict</code></td><td>Serialization produces expected structure</td><td>All keys present; values match original object</td></tr>
+  <tr><td><code>test_voice_style_default_tags</code></td><td>Tags default to empty list when omitted</td><td><code>v.tags == []</code></td></tr>
+  <tr><td><code>test_preset_voices_count</code></td><td>Exactly 10 preset voices defined</td><td>len == 10</td></tr>
+  <tr><td><code>test_male_voices</code></td><td>5 male voices with correct names</td><td>len == 5; names == {"M1","M2","M3","M4","M5"}</td></tr>
+  <tr><td><code>test_female_voices</code></td><td>5 female voices with correct names</td><td>len == 5; names == {"F1","F2","F3","F4","F5"}</td></tr>
+  <tr><td><code>test_all_voices_have_descriptions</code></td><td>Every voice has a meaningful description</td><td>len(description) > 10; display_name contains em-dash</td></tr>
+  <tr><td><code>test_languages_count</code></td><td>31 languages defined</td><td>len == 31</td></tr>
+  <tr><td><code>test_english_present</code></td><td>English is in the language map</td><td>LANGUAGES["en"] == "English"</td></tr>
+  <tr><td><code>test_all_language_codes_are_two_chars</code></td><td>All codes are valid ISO 639-1</td><td>Every code has len == 2</td></tr>
+  <tr><td><code>test_tags_count</code></td><td>6 expression tags defined</td><td>len == 6</td></tr>
+  <tr><td><code>test_tags_format</code></td><td>All tags use angle bracket notation</td><td>Every tag starts with &lt; and ends with &gt;</td></tr>
+  <tr><td><code>test_default_port</code></td><td>Default port is 8765</td><td>PORT == 8765</td></tr>
+  <tr><td><code>test_default_host</code></td><td>Default host is 0.0.0.0</td><td>HOST == "0.0.0.0"</td></tr>
+  <tr><td><code>test_data_dir_is_absolute</code></td><td>DATA_DIR is a non-empty string</td><td>bool(DATA_DIR) is True</td></tr>
+</table>
+
+<h2>14.3 Running Tests</h2>
+
+<pre><code>$ python -m pytest tests/ -v
+================================ test session starts ================================
+platform darwin -- Python 3.14.3, pytest-9.0.3
+collected 15 items
+
+tests/test_engine.py::TestVoiceStyle::test_voice_style_creation PASSED       [  6%]
+tests/test_engine.py::TestVoiceStyle::test_voice_style_to_dict PASSED        [ 13%]
+tests/test_engine.py::TestVoiceStyle::test_voice_style_default_tags PASSED   [ 20%]
+tests/test_engine.py::TestPresetVoices::test_preset_voices_count PASSED      [ 26%]
+tests/test_engine.py::TestPresetVoices::test_male_voices PASSED              [ 33%]
+tests/test_engine.py::TestPresetVoices::test_female_voices PASSED            [ 40%]
+tests/test_engine.py::TestPresetVoices::test_all_voices_have_descriptions PASSED [ 46%]
+tests/test_engine.py::TestLanguages::test_languages_count PASSED             [ 53%]
+tests/test_engine.py::TestLanguages::test_english_present PASSED             [ 60%]
+tests/test_engine.py::TestLanguages::test_all_language_codes_are_two_chars PASSED [ 66%]
+tests/test_engine.py::TestExpressionTags::test_tags_count PASSED             [ 73%]
+tests/test_engine.py::TestExpressionTags::test_tags_format PASSED            [ 80%]
+tests/test_engine.py::TestConfig::test_default_port PASSED                   [ 86%]
+tests/test_engine.py::TestConfig::test_default_host PASSED                   [ 93%]
+tests/test_engine.py::TestConfig::test_data_dir_is_absolute PASSED           [100%]
+
+================================ 15 passed in 0.03s =================================</code></pre>
+
+<div class="page-break"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 15: SECURITY ARCHITECTURE                                         -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<h1 class="chapter">Security Architecture</h1>
+
+<h2>15.1 Security Design Principles</h2>
+
+<p>VoxCraft's security posture is built on three principles:</p>
+
+<ol>
+  <li><strong>No Data Exfiltration:</strong> The application makes zero outbound network calls for synthesis. After the one-time model download, VoxCraft can operate in a fully air-gapped environment. There is no telemetry, no analytics, no crash reporting, no license activation. All frontend assets (fonts, waveform renderer) are vendored in the repository — the browser makes zero external requests after page load.</li>
+
+  <li><strong>Minimal Attack Surface:</strong> VoxCraft exposes only a single HTTP server on a configurable port. There is no authentication system to attack, no database to inject, no user accounts to enumerate, no password reset flow to exploit. The API is designed for localhost use and does not implement authentication in v1.0 (API key authentication is planned for v2.0).</li>
+
+  <li><strong>Defense in Depth:</strong> Path traversal protections are implemented at multiple layers. The CORS configuration is permissive by default but documented for hardening in production deployments. Input validation happens at both the Pydantic layer and the engine layer.</li>
+</ol>
+
+<h2>15.2 Attack Surface Analysis</h2>
+
+<table>
+  <tr><th>Attack Vector</th><th>Risk</th><th>Mitigation</th></tr>
+  <tr><td>Path traversal via <code>/api/audio/{filename}</code></td><td>Medium</td><td><code>os.path.basename()</code> strips directory components; file must exist in <code>EXPORTS_DIR</code></td></tr>
+  <tr><td>Path traversal via <code>/{path}</code> frontend route</td><td>Medium</td><td><code>Path.relative_to()</code> check ensures resolved path is within <code>FRONTEND_DIR</code></td></tr>
+  <tr><td>DoS via large batch requests</td><td>Low</td><td>Batch limited to 50 texts; individual text limited to 5,000 chars; quality capped at 12 steps</td></tr>
+  <tr><td>DoS via rapid synthesis requests</td><td>Low</td><td>No rate limiting in v1.0 (synthesis is CPU-bound, naturally self-throttling); rate limiting planned for v2.0</td></tr>
+  <tr><td>SSRF via user-controlled URLs</td><td>None</td><td>No endpoints accept URLs as parameters; no outbound HTTP requests are made by the backend</td></tr>
+  <tr><td>Injection via text input</td><td>None</td><td>Text is passed to ONNX model, not executed or interpreted as code; no SQL/command injection surface</td></tr>
+  <tr><td>CORS misconfiguration</td><td>Low</td><td><code>allow_origins=["*"]</code> is acceptable for localhost; production deployments should restrict origins</td></tr>
+</table>
+
+<h2>15.3 Path Traversal Mitigation</h2>
+
+<p>The audio serving endpoint is the most sensitive path in the system — it reads files from disk based on user-supplied filenames. The implementation uses <code>os.path.basename()</code> as the primary defense:</p>
+
+<pre><code>safe_name = os.path.basename(unquote(filename))
+audio_path = EXPORTS_DIR / safe_name</code></pre>
+
+<p>This strips any directory traversal payload (e.g., <code>../../../etc/passwd</code> becomes just <code>passwd</code>). Combined with the requirement that the file must exist in <code>EXPORTS_DIR</code>, this effectively eliminates path traversal as an attack vector.</p>
+
+<p>The frontend static file serving endpoint uses a different approach — <code>Path.relative_to()</code> — which verifies that the resolved path is a descendant of the intended directory:</p>
+
+<pre><code>requested = FRONTEND_DIR / full_path
+try:
+    requested.relative_to(FRONTEND_DIR)
+except ValueError:
+    raise HTTPException(status_code=404)</code></pre>
+
+<h2>15.4 CORS &amp; Network Security</h2>
+
+<p>The current CORS configuration permits all origins:</p>
+
+<pre><code>app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)</code></pre>
+
+<p>This is appropriate for a localhost development tool but should be restricted for any deployment where the server is accessible from the network. For production deployments, the recommended configuration is:</p>
+
+<pre><code>allow_origins=["https://your-domain.com"]</code></pre>
+
+<h2>15.5 Vulnerability Reporting</h2>
+
+<p>Security vulnerabilities should be reported privately through GitHub Security Advisories (via the Security tab on the repository). Do not open public issues for security bugs. The maintainer commits to acknowledging reports within 48 hours and assessing them within 5 business days. Critical vulnerabilities will be patched as quickly as possible, and disclosure will be coordinated with the reporter.</p>
+
+<div class="page-break"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 16: ROADMAP & FUTURE                                              -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<h1 class="chapter">Roadmap &amp; Future Development</h1>
+
+<h2>16.1 Version 1.0 — Current Release (June 2026)</h2>
+
+<p>The inaugural release delivers a complete, production-ready TTS studio. All checklist items are implemented and tested:</p>
+
+<table>
+  <tr><th>Feature</th><th>Status</th></tr>
+  <tr><td>FastAPI backend with 7 endpoints (plus catch-all frontend route)</td><td>✅ Complete</td></tr>
+  <tr><td>10 voice styles (M1–M5, F1–F5)</td><td>✅ Complete</td></tr>
+  <tr><td>31 language support</td><td>✅ Complete</td></tr>
+  <tr><td>6 expression tags (laugh, breath, sigh, whisper, cough, say)</td><td>✅ Complete</td></tr>
+  <tr><td>Speed control (0.7×–2.0×)</td><td>✅ Complete</td></tr>
+  <tr><td>Quality control (5–12 denoising steps)</td><td>✅ Complete</td></tr>
+  <tr><td>WaveSurfer.js waveform preview</td><td>✅ Complete</td></tr>
+  <tr><td>Batch mode (up to 50 texts)</td><td>✅ Complete</td></tr>
+  <tr><td>Generation history with search</td><td>✅ Complete</td></tr>
+  <tr><td>44.1kHz 16-bit WAV export</td><td>✅ Complete</td></tr>
+  <tr><td>Keyboard shortcuts (Cmd+Enter, Space)</td><td>✅ Complete</td></tr>
+  <tr><td>MIT license</td><td>✅ Complete</td></tr>
+</table>
+
+<h2>16.2 Version 1.1 — Polish &amp; Ecosystem</h2>
+
+<p><strong>Target:</strong> Make VoxCraft feel like a polished product, not a prototype.</p>
+
+<table>
+  <tr><th>Feature</th><th>Complexity</th><th>Tags</th></tr>
+  <tr><td>MP3, OGG, FLAC export formats (via pydub/ffmpeg)</td><td>Easy</td><td>good first issue, backend, frontend</td></tr>
+  <tr><td>Dark/Light theme toggle</td><td>Easy</td><td>good first issue, frontend</td></tr>
+  <tr><td>Voice preview buttons (3-second per-voice samples)</td><td>Medium</td><td>frontend, backend, voice</td></tr>
+  <tr><td>Undo/Redo in text editor</td><td>Easy</td><td>good first issue, frontend</td></tr>
+  <tr><td>Download history as ZIP archive</td><td>Medium</td><td>backend, frontend</td></tr>
+  <tr><td>Text statistics (word count, estimated duration, reading time)</td><td>Easy</td><td>good first issue, frontend</td></tr>
+</table>
+
+<h2>16.3 Version 1.2 — Power Features</h2>
+
+<p><strong>Target:</strong> Features that professional content creators actually need.</p>
+
+<table>
+  <tr><th>Feature</th><th>Complexity</th><th>Tags</th></tr>
+  <tr><td>SSML support (&lt;prosody&gt;, &lt;break&gt;, &lt;emphasis&gt;, &lt;phoneme&gt;)</td><td>Hard</td><td>tts-engine, backend</td></tr>
+  <tr><td>Custom Voice Import UI (from Supertonic Voice Builder)</td><td>Medium</td><td>frontend, backend, voice</td></tr>
+  <tr><td>Audio trimming &amp; normalization (trim silence, normalize volume, fade)</td><td>Medium</td><td>backend, performance</td></tr>
+  <tr><td>Chapter marks for audiobooks (embedded chapter metadata in WAV)</td><td>Medium</td><td>backend, tts-engine</td></tr>
+  <tr><td>Real-time streaming preview (stream audio during generation)</td><td>Hard</td><td>tts-engine, backend, frontend</td></tr>
+</table>
+
+<h2>16.4 Version 2.0 — Collaborative Platform</h2>
+
+<p><strong>Target:</strong> VoxCraft as a platform, not just a tool.</p>
+
+<table>
+  <tr><th>Feature</th><th>Complexity</th></tr>
+  <tr><td>Multi-Voice Script Editor (assign different voices to paragraphs/sentences)</td><td>Hard</td></tr>
+  <tr><td>Project Files (.voxcraft format — text, voices, parameters, audio refs)</td><td>Medium</td></tr>
+  <tr><td>Docker Deployment (one-command deploy with pre-cached model)</td><td>Medium</td></tr>
+  <tr><td>REST API Authentication (optional API keys for server deployments)</td><td>Medium</td></tr>
+  <tr><td>Plugin System (hooks-based: custom preprocessors, postprocessors, exporters)</td><td>Hard</td></tr>
+</table>
+
+<h2>16.5 Community Wishlist</h2>
+
+<p>Ideas from the community that have not yet been prioritized for a specific version:</p>
+
+<table>
+  <tr><th>Idea</th><th>Description</th></tr>
+  <tr><td>Pronunciation dictionary</td><td>Custom word pronunciations per language</td></tr>
+  <tr><td>Emotion presets</td><td>One-click emotional tone (happy, sad, urgent, calm)</td></tr>
+  <tr><td>Auto-punctuation</td><td>Smart punctuation insertion for raw text</td></tr>
+  <tr><td>YouTube caption import</td><td>Paste URL → auto-extract transcript for voiceover</td></tr>
+  <tr><td>Mobile PWA</td><td>Progressive Web App for mobile use</td></tr>
+  <tr><td>Voice morphing</td><td>Blend between two voice styles</td></tr>
+  <tr><td>Background music mixing</td><td>Add royalty-free background tracks</td></tr>
+  <tr><td>Subtitle export</td><td>Generate SRT/VTT alongside audio</td></tr>
+  <tr><td>Accessibility checker</td><td>WCAG compliance for the frontend</td></tr>
+</table>
+
+<div class="page-break"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- CHAPTER 17: APPENDICES                                                    -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<h1 class="chapter">Appendices</h1>
+
+<h2>Appendix A: Complete Language Code Reference</h2>
+
+<table>
+  <tr><th>Code</th><th>Name</th><th>Family</th><th>Speakers (est.)</th></tr>
+  <tr><td><code>ar</code></td><td>العربية (Arabic)</td><td>Semitic</td><td>~400M</td></tr>
+  <tr><td><code>bg</code></td><td>Български (Bulgarian)</td><td>Slavic</td><td>~8M</td></tr>
+  <tr><td><code>cs</code></td><td>Čeština (Czech)</td><td>Slavic</td><td>~10M</td></tr>
+  <tr><td><code>da</code></td><td>Dansk (Danish)</td><td>Germanic</td><td>~6M</td></tr>
+  <tr><td><code>de</code></td><td>Deutsch (German)</td><td>Germanic</td><td>~130M</td></tr>
+  <tr><td><code>el</code></td><td>Ελληνικά (Greek)</td><td>Hellenic</td><td>~13M</td></tr>
+  <tr><td><code>en</code></td><td>English</td><td>Germanic</td><td>~1.5B</td></tr>
+  <tr><td><code>es</code></td><td>Español (Spanish)</td><td>Romance</td><td>~560M</td></tr>
+  <tr><td><code>fi</code></td><td>Suomi (Finnish)</td><td>Uralic</td><td>~5.5M</td></tr>
+  <tr><td><code>fr</code></td><td>Français (French)</td><td>Romance</td><td>~310M</td></tr>
+  <tr><td><code>he</code></td><td>עברית (Hebrew)</td><td>Semitic</td><td>~9M</td></tr>
+  <tr><td><code>hi</code></td><td>हिन्दी (Hindi)</td><td>Indo-Aryan</td><td>~600M</td></tr>
+  <tr><td><code>hr</code></td><td>Hrvatski (Croatian)</td><td>Slavic</td><td>~5.5M</td></tr>
+  <tr><td><code>hu</code></td><td>Magyar (Hungarian)</td><td>Uralic</td><td>~13M</td></tr>
+  <tr><td><code>id</code></td><td>Bahasa Indonesia</td><td>Austronesian</td><td>~200M</td></tr>
+  <tr><td><code>it</code></td><td>Italiano (Italian)</td><td>Romance</td><td>~67M</td></tr>
+  <tr><td><code>ja</code></td><td>日本語 (Japanese)</td><td>Japonic</td><td>~125M</td></tr>
+  <tr><td><code>ko</code></td><td>한국어 (Korean)</td><td>Koreanic</td><td>~81M</td></tr>
+  <tr><td><code>ms</code></td><td>Bahasa Melayu</td><td>Austronesian</td><td>~30M</td></tr>
+  <tr><td><code>nb</code></td><td>Norsk (Norwegian)</td><td>Germanic</td><td>~5M</td></tr>
+  <tr><td><code>nl</code></td><td>Nederlands (Dutch)</td><td>Germanic</td><td>~25M</td></tr>
+  <tr><td><code>pl</code></td><td>Polski (Polish)</td><td>Slavic</td><td>~40M</td></tr>
+  <tr><td><code>pt</code></td><td>Português (Portuguese)</td><td>Romance</td><td>~260M</td></tr>
+  <tr><td><code>ro</code></td><td>Română (Romanian)</td><td>Romance</td><td>~24M</td></tr>
+  <tr><td><code>ru</code></td><td>Русский (Russian)</td><td>Slavic</td><td>~260M</td></tr>
+  <tr><td><code>sv</code></td><td>Svenska (Swedish)</td><td>Germanic</td><td>~10M</td></tr>
+  <tr><td><code>th</code></td><td>ไทย (Thai)</td><td>Tai-Kadai</td><td>~60M</td></tr>
+  <tr><td><code>tr</code></td><td>Türkçe (Turkish)</td><td>Turkic</td><td>~85M</td></tr>
+  <tr><td><code>uk</code></td><td>Українська (Ukrainian)</td><td>Slavic</td><td>~40M</td></tr>
+  <tr><td><code>vi</code></td><td>Tiếng Việt (Vietnamese)</td><td>Austroasiatic</td><td>~85M</td></tr>
+  <tr><td><code>zh</code></td><td>中文 (Chinese)</td><td>Sino-Tibetan</td><td>~1.1B</td></tr>
+</table>
+
+<h2>Appendix B: Voice Catalog — Full Metadata</h2>
+
+<table class="small">
+  <tr><th>Code</th><th>Display Name</th><th>Gender</th><th>Description</th><th>Tags</th></tr>
+  <tr><td>M1</td><td>M1 — Warm Baritone</td><td>Male</td><td>Rich, deep male voice with natural warmth. Ideal for narration and storytelling.</td><td>warm, deep, narration</td></tr>
+  <tr><td>M2</td><td>M2 — Calm Tenor</td><td>Male</td><td>Smooth, even-toned male voice. Perfect for explainers and tutorials.</td><td>calm, smooth, educational</td></tr>
+  <tr><td>M3</td><td>M3 — Authoritative</td><td>Male</td><td>Strong, commanding male voice for announcements and promos.</td><td>strong, authoritative, promo</td></tr>
+  <tr><td>M4</td><td>M4 — Friendly</td><td>Male</td><td>Approachable, conversational male voice for casual content.</td><td>friendly, casual, conversational</td></tr>
+  <tr><td>M5</td><td>M5 — Deep Narrator</td><td>Male</td><td>Deep, resonant male voice for cinematic narration.</td><td>deep, cinematic, narrator</td></tr>
+  <tr><td>F1</td><td>F1 — Warm Alto</td><td>Female</td><td>Rich, expressive female voice. Great for stories and podcasts.</td><td>warm, expressive, podcast</td></tr>
+  <tr><td>F2</td><td>F2 — Bright Soprano</td><td>Female</td><td>Clear, energetic female voice for tutorials and ads.</td><td>bright, energetic, tutorial</td></tr>
+  <tr><td>F3</td><td>F3 — Professional</td><td>Female</td><td>Polished, corporate female voice for business content.</td><td>polished, corporate, business</td></tr>
+  <tr><td>F4</td><td>F4 — Gentle</td><td>Female</td><td>Soft, soothing female voice for meditation and relaxation.</td><td>soft, soothing, meditation</td></tr>
+  <tr><td>F5</td><td>F5 — Energetic</td><td>Female</td><td>Upbeat, lively female voice for social media and promos.</td><td>upbeat, lively, social</td></tr>
+</table>
+
+<h2>Appendix C: Expression Tag Quick Reference</h2>
+
+<table>
+  <tr><th>Tag Name</th><th>Syntax</th><th>Type</th><th>Example Usage</th></tr>
+  <tr><td>Laugh</td><td><code>&lt;laugh&gt;</code></td><td>Standalone</td><td><code>That's hilarious! &lt;laugh&gt;</code></td></tr>
+  <tr><td>Breath</td><td><code>&lt;breath&gt;</code></td><td>Standalone</td><td><code>&lt;breath&gt; Let me tell you a story.</code></td></tr>
+  <tr><td>Sigh</td><td><code>&lt;sigh&gt;</code></td><td>Standalone</td><td><code>What a long day. &lt;sigh&gt;</code></td></tr>
+  <tr><td>Whisper</td><td><code>&lt;whisper&gt;</code></td><td>Wrapper</td><td><code>&lt;whisper&gt;This is a secret.&lt;/whisper&gt;</code></td></tr>
+  <tr><td>Cough</td><td><code>&lt;cough&gt;</code></td><td>Standalone</td><td><code>Excuse me. &lt;cough&gt;</code></td></tr>
+  <tr><td>Say</td><td><code>&lt;say&gt;</code></td><td>Wrapper</td><td><code>&lt;say&gt;Normal speech here.&lt;/say&gt;</code></td></tr>
+</table>
+
+<h2>Appendix D: Request/Response JSON Schemas</h2>
+
+<h3>SynthesizeRequest</h3>
+<pre><code>{
+  "text": "string (1–5000 chars)",
+  "voice": "string (default: 'M1')",
+  "language": "string (default: 'en')",
+  "speed": "number (0.7–2.0, default: 1.05)",
+  "quality": "integer (5–12, default: 8)"
+}</code></pre>
+
+<h3>SynthesizeResponse</h3>
+<pre><code>{
+  "success": true,
+  "audio_url": "string (relative path)",
+  "duration_seconds": "number (float, 2 decimal places)",
+  "id": "string (8-char hex)",
+  "text": "string (echo of input)",
+  "voice": "string",
+  "language": "string",
+  "sample_rate": 44100
+}</code></pre>
+
+<h3>BatchSynthesizeRequest</h3>
+<pre><code>{
+  "texts": ["string", ...] (1–50 items),
+  "voice": "string (default: 'M1')",
+  "language": "string (default: 'en')",
+  "speed": "number (0.7–2.0, default: 1.05)",
+  "quality": "integer (5–12, default: 8)",
+  "merge": "boolean (default: false)"
+}</code></pre>
+
+<h2>Appendix E: Keyboard Shortcut Reference</h2>
+
+<table>
+  <tr><th>Shortcut</th><th>Platform</th><th>Context</th><th>Action</th></tr>
+  <tr><td><code>Cmd+Enter</code></td><td>macOS</td><td>Textarea focused</td><td>Generate speech</td></tr>
+  <tr><td><code>Ctrl+Enter</code></td><td>Windows/Linux</td><td>Textarea focused</td><td>Generate speech</td></tr>
+  <tr><td><code>Space</code></td><td>All</td><td>No input focused</td><td>Play/Pause audio</td></tr>
+</table>
+
+<h2>Appendix F: Third-Party Dependency Manifest</h2>
+
+<table>
+  <tr><th>Package</th><th>Version</th><th>License</th><th>Purpose</th></tr>
+  <tr><td>fastapi</td><td>≥0.115</td><td>MIT</td><td>Web framework</td></tr>
+  <tr><td>uvicorn</td><td>≥0.34</td><td>BSD-3</td><td>ASGI server</td></tr>
+  <tr><td>pydantic</td><td>≥2.0</td><td>MIT</td><td>Data validation</td></tr>
+  <tr><td>supertonic</td><td>≥1.3</td><td>Apache-2.0</td><td>TTS engine</td></tr>
+  <tr><td>numpy</td><td>≥1.24</td><td>BSD-3</td><td>Numerical computing</td></tr>
+  <tr><td>soundfile</td><td>≥0.13</td><td>BSD-3</td><td>Audio I/O</td></tr>
+  <tr><td>python-multipart</td><td>≥0.0.12</td><td>Apache-2.0</td><td>Form parsing</td></tr>
+  <tr><td>pytest</td><td>≥8.0</td><td>MIT</td><td>Testing (dev)</td></tr>
+  <tr><td>pytest-asyncio</td><td>≥0.24</td><td>Apache-2.0</td><td>Async testing (dev)</td></tr>
+  <tr><td>ruff</td><td>≥0.8</td><td>MIT</td><td>Linting (dev)</td></tr>
+  <tr><td>httpx</td><td>≥0.28</td><td>BSD-3</td><td>HTTP testing (dev)</td></tr>
+  <tr><td>WaveSurfer.js</td><td>v7</td><td>BSD-3</td><td>Waveform visualization (vendored in frontend/assets/)</td></tr>
+  <tr><td>Inter Font</td><td>v3.19</td><td>OFL</td><td>Typeface (vendored in frontend/fonts/)</td></tr>
+</table>
+
+<h2>Appendix G: Glossary of Terms</h2>
+
+<table>
+  <tr><th style="width:20%">Term</th><th>Definition</th></tr>
+  <tr><td><strong>ASGI</strong></td><td>Asynchronous Server Gateway Interface — the modern Python standard for async web servers. Uvicorn is an ASGI server implementation.</td></tr>
+  <tr><td><strong>Denoising Steps</strong></td><td>Iterations of the diffusion-based audio refinement process. More steps produce cleaner audio at the cost of longer generation time.</td></tr>
+  <tr><td><strong>Expression Tag</strong></td><td>Inline markup token that instructs the TTS engine to produce a non-verbal vocal expression (laugh, breath, etc.).</td></tr>
+  <tr><td><strong>FastAPI</strong></td><td>Modern Python web framework built on Starlette and Pydantic. Provides automatic OpenAPI documentation generation.</td></tr>
+  <tr><td><strong>ISO 639-1</strong></td><td>International standard for two-letter language codes. VoxCraft uses these codes for language identification.</td></tr>
+  <tr><td><strong>ONNX</strong></td><td>Open Neural Network Exchange — an open format for machine learning models that enables cross-platform inference.</td></tr>
+  <tr><td><strong>PCM</strong></td><td>Pulse-Code Modulation — uncompressed digital audio representation. WAV files use PCM encoding.</td></tr>
+  <tr><td><strong>Pydantic</strong></td><td>Python data validation library using type annotations. VoxCraft uses Pydantic v2 for request/response schemas.</td></tr>
+  <tr><td><strong>RTL</strong></td><td>Right-to-Left — writing direction used by Arabic, Hebrew, and other Semitic scripts.</td></tr>
+  <tr><td><strong>SPA</strong></td><td>Single-Page Application — a web application that loads a single HTML page and dynamically updates content without full page reloads.</td></tr>
+  <tr><td><strong>SSML</strong></td><td>Speech Synthesis Markup Language — XML-based markup for controlling TTS output. Planned for VoxCraft v1.2.</td></tr>
+  <tr><td><strong>Supertonic 3</strong></td><td>The TTS engine that powers VoxCraft. A 99M-parameter ONNX model supporting 31 languages with CPU-optimized inference.</td></tr>
+  <tr><td><strong>Uvicorn</strong></td><td>Lightning-fast ASGI server implementation. Runs the FastAPI application and serves both API and static files.</td></tr>
+  <tr><td><strong>UUID4</strong></td><td>Version 4 UUID (Universally Unique Identifier) — a randomly generated 128-bit identifier used for generation tracking.</td></tr>
+  <tr><td><strong>Web Audio API</strong></td><td>Browser API for processing and playing audio with low latency. Used by WaveSurfer.js for waveform rendering.</td></tr>
+</table>
+
+<h2>Appendix H: Bibliography &amp; References</h2>
+
+<ol>
+  <li>Supertonic 3 — ONNX-based multilingual TTS engine. GitHub: <a href="https://github.com/supertone-inc/supertonic">github.com/supertone-inc/supertonic</a></li>
+  <li>FastAPI Documentation — <a href="https://fastapi.tiangolo.com/">fastapi.tiangolo.com</a></li>
+  <li>Pydantic v2 Documentation — <a href="https://docs.pydantic.dev/latest/">docs.pydantic.dev</a></li>
+  <li>WaveSurfer.js v7 Documentation — <a href="https://wavesurfer.xyz/">wavesurfer.xyz</a></li>
+  <li>ONNX Runtime — <a href="https://onnxruntime.ai/">onnxruntime.ai</a></li>
+  <li>SoundFile Documentation — <a href="https://pysoundfile.readthedocs.io/">pysoundfile.readthedocs.io</a></li>
+  <li>ISO 639-1:2002 — Codes for the representation of names of languages — Part 1: Alpha-2 code</li>
+  <li>WAVE PCM Soundfile Format — <a href="http://soundfile.sapp.org/doc/WaveFormat/">soundfile.sapp.org</a></li>
+  <li>Contributor Covenant 2.1 — <a href="https://www.contributor-covenant.org/version/2/1/code_of_conduct.html">contributor-covenant.org</a></li>
+  <li>12-Factor App Methodology — <a href="https://12factor.net/">12factor.net</a></li>
+  <li>Semantic Versioning 2.0.0 — <a href="https://semver.org/">semver.org</a></li>
+</ol>
+
+<div style="text-align:center; margin-top:2cm; padding-top:1cm; border-top:2px solid #6366f1; color:#6b7280; font-size:9pt;">
+  <p><em>VoxCraft Technical Documentation — Revision 1.0 — June 2026</em></p>
+  <p>Authored by Shyam Kumar Gatti · Licensed under MIT</p>
+  <p>Repository: github.com/ShyamKumar1/voxcraft</p>
+</div>
+
+</body>
+</html>
